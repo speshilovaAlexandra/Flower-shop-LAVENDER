@@ -21,7 +21,7 @@
        </div>
        <!-- 🆕 Основное изображение -->
        <img 
-        :src="getImageUrl(flower.img)" 
+        :src="getImageUrl(flower.image_url || flower.img)"
         :alt="flower.nazvanie"
         class="product-img"
         :class="{ loaded: imageLoaded }"
@@ -79,6 +79,7 @@ import { useRoute, useRouter } from 'vue-router'
 import api from '@/api'
 import { useToastStore } from '@/stores/toast'
 import { useCart } from '@/composables/useCart'
+import { getImageUrl } from '@/utils/image';
 
 const route = useRoute()
 const router = useRouter()
@@ -97,15 +98,15 @@ const seo = {
 }
 
 const isAuthenticated = () => !!localStorage.getItem('token')
-const getBaseUrl = () => api.defaults.baseURL.replace('http://speshisq.beget.tech', '');
+// const getBaseUrl = () => api.defaults.baseURL.replace('http://speshisq.beget.tech', '');
 
-// 🖼️ ФУНКЦИИ ДЛЯ КАРТИНОК (ОСТАВЛЕНЫ БЕЗ ИЗМЕНЕНИЙ)
-const getImageUrl = (imgPath) => {
-  if (!imgPath) return '/images/placeholder.jpg'
-  if (imgPath.startsWith('http://') || imgPath.startsWith('https://')) return imgPath
-  const clean = imgPath.replace(/^\/\//, '')
-  return `${getBaseUrl()}/storage/${clean}`
-}
+// // 🖼️ ФУНКЦИИ ДЛЯ КАРТИНОК (ОСТАВЛЕНЫ БЕЗ ИЗМЕНЕНИЙ)
+// const getImageUrl = (imgPath) => {
+//   if (!imgPath) return '/images/placeholder.jpg'
+//   if (imgPath.startsWith('http://') || imgPath.startsWith('https://')) return imgPath
+//   const clean = imgPath.replace(/^\/\//, '')
+//   return `${getBaseUrl()}/storage/${clean}`
+// }
 
 const onImageError = () => {
   imageLoaded.value = true; // Показываем заглушку

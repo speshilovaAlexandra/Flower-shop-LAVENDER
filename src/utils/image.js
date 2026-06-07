@@ -1,4 +1,4 @@
-const PLACEHOLDER = '/images/placeholder.svg'
+export const PLACEHOLDER = '/images/placeholder.svg'
 
 export function getImageUrl(imagePath) {
   if (!imagePath) return PLACEHOLDER
@@ -13,4 +13,12 @@ export function getImageUrl(imagePath) {
 
   // Относительный путь из БД (например flowers/abc.jpg)
   return `/storage/${imagePath.replace(/^\//, '')}`
+}
+
+/** Подставляет заглушку, если картинка не загрузилась */
+export function handleImageError(event) {
+  const img = event?.target
+  if (!img || img.src.endsWith(PLACEHOLDER)) return
+  img.onerror = null
+  img.src = PLACEHOLDER
 }

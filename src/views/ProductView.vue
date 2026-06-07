@@ -79,7 +79,7 @@ import { useRoute, useRouter } from 'vue-router'
 import api from '@/api'
 import { useToastStore } from '@/stores/toast'
 import { useCart } from '@/composables/useCart'
-import { getImageUrl } from '@/utils/image';
+import { getImageUrl, handleImageError } from '@/utils/image';
 
 const route = useRoute()
 const router = useRouter()
@@ -108,8 +108,9 @@ const isAuthenticated = () => !!localStorage.getItem('token')
 //   return `${getBaseUrl()}/storage/${clean}`
 // }
 
-const onImageError = () => {
-  imageLoaded.value = true; // Показываем заглушку
+const onImageError = (e) => {
+  handleImageError(e)
+  imageLoaded.value = true
 }
 
 const formatPrice = (price) => new Intl.NumberFormat('ru-RU').format(price) + ' ₽'

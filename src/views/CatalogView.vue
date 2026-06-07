@@ -42,7 +42,7 @@
            :class="{ loaded: imageLoaded[flower.id] }"
            loading="lazy"
            @load="onImageLoad(flower.id)"
-           @error="onImageError(flower.id)"
+           @error="(e) => { handleImageError(e); onImageError(flower.id); }"
            @click="$router.push('/product/' + flower.id)"
          >
        </picture>
@@ -66,7 +66,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
 
 import { useCart } from '@/composables/useCart';
-import { getImageUrl } from '@/utils/image';
+import { getImageUrl, handleImageError } from '@/utils/image';
 const flowers = ref([]);
 const loading = ref(true);
 const error = ref(null);

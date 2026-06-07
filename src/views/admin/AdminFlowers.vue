@@ -49,7 +49,7 @@
              <tr v-for="flower in flowers" :key="flower.id">
                <td>
                  <div class="img-thumb">
-                   <img :src="getImageUrl(flower.image_url || flower.img)" :alt="flower.nazvanie">
+                   <img :src="getImageUrl(flower.image_url || flower.img)" :alt="flower.nazvanie" @error="handleImageError">
                  </div>
                </td>
                <td>
@@ -146,7 +146,7 @@
                  </label>
                </div>
                <div v-if="editingId && currentFlowerImg && !form.flower_img" class="current-img-hint">
-                 Текущее фото цветка: <img :src="getImageUrl(currentFlowerImg)" alt="" class="hint-thumb">
+                 Текущее фото цветка: <img :src="getImageUrl(currentFlowerImg)" alt="" class="hint-thumb" @error="handleImageError">
                </div>
              </div>
            </div>
@@ -168,7 +168,7 @@
 import { ref, onMounted } from 'vue';
 import api from '@/api';
 import { useToastStore } from '@/stores/toast';
-import { getImageUrl } from '@/utils/image';
+import { getImageUrl, handleImageError } from '@/utils/image';
 // 📦 Состояние для CSV
 const selectedCsv = ref(null);
 const uploading = ref(false);

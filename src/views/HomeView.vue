@@ -21,7 +21,7 @@
       <div class="products-grid">
         <div v-for="flower in flowers" :key="flower.id" class="product-card" @click="$router.push('/product/' + flower.id)">
           <div class="product-image">
-            <img :src="getImageUrl(flower.image_url || flower.img)" :alt="flower.nazvanie" loading="lazy">
+            <img :src="getImageUrl(flower.image_url || flower.img)" :alt="flower.nazvanie" loading="lazy" @error="handleImageError">
           </div>
           <h3>{{ flower.nazvanie }}</h3>
           <p class="price">{{ formatPrice(flower.price) }}</p>
@@ -52,7 +52,7 @@
 import { ref, onMounted } from 'vue';
 import api from '@/api';
 import { useAuthStore } from '@/stores/auth';
-import { getImageUrl } from '@/utils/image';
+import { getImageUrl, handleImageError } from '@/utils/image';
 
 const flowers = ref([]);
 const additionalProducts = ref([]);

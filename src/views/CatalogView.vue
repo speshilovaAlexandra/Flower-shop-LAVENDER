@@ -88,7 +88,7 @@ const getImageUrl = (flower) => {
   // Если путь к изображению
   if (flower.img) {
     const clean = flower.img.replace(/^\//, '');
-    return `${getBaseUrl()}/storage/${clean}`;
+    return url.replace('http://speshisq.beget.tech', '');;
   }
   
   // Если есть image_url из модели

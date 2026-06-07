@@ -104,7 +104,7 @@ const getImageUrl = (imgPath) => {
   if (!imgPath) return '/images/placeholder.jpg'
   if (imgPath.startsWith('http://') || imgPath.startsWith('https://')) return imgPath
   const clean = imgPath.replace(/^\/\//, '')
-  return `${getBaseUrl()}/storage/${clean}`
+  return url.replace('http://speshisq.beget.tech', '');
 }
 
 const onImageError = () => {

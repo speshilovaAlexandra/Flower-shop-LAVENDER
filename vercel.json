@@ -5,6 +5,10 @@
       "destination": "http://speshisq.beget.tech/api/:path*"
     },
     {
+      "source": "/storage/:path*",
+      "destination": "http://speshisq.beget.tech/storage/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

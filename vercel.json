@@ -1,12 +1,12 @@
 {
   "rewrites": [
-    { 
-      "source": "/api/:path*", 
-      "destination": "http://speshisq.beget.tech/:path*" 
+    {
+      "source": "/api/:path*",
+      "destination": "http://speshisq.beget.tech/api/:path*"
     },
-    { 
-      "source": "/(.*)", 
-      "destination": "/index.html" 
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }

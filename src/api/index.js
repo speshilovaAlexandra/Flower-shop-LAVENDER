@@ -1,10 +1,9 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: ('http://speshisq.beget.tech/api'),
+  baseURL: '/api', // <--- ИЗМЕНИЛИ ЗДЕСЬ. Было: 'http://speshisq.beget.tech/api'
   headers: {
     'Content-Type': 'application/json',
-    // 'Accept': 'application/json',
   },
 });
 
@@ -31,4 +30,4 @@ api.interceptors.response.use(
   }
 );
 
-export default api; 
+export default api;

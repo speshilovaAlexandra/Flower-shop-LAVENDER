@@ -97,14 +97,14 @@ const seo = {
 }
 
 const isAuthenticated = () => !!localStorage.getItem('token')
-const getBaseUrl = () => api.defaults.baseURL.replace('/api', '')
+const getBaseUrl = () => api.defaults.baseURL.replace('http://speshisq.beget.tech', '');
 
 // 🖼️ ФУНКЦИИ ДЛЯ КАРТИНОК (ОСТАВЛЕНЫ БЕЗ ИЗМЕНЕНИЙ)
 const getImageUrl = (imgPath) => {
   if (!imgPath) return '/images/placeholder.jpg'
   if (imgPath.startsWith('http://') || imgPath.startsWith('https://')) return imgPath
   const clean = imgPath.replace(/^\/\//, '')
-  return url.replace('http://speshisq.beget.tech', '');
+  return `${getBaseUrl()}/storage/${clean}`
 }
 
 const onImageError = () => {

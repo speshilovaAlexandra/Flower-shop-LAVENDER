@@ -74,7 +74,7 @@ const authStore = useAuthStore();
 const toast = useToastStore();
 const filters = ref({ search: '', minPrice: '', maxPrice: '', sort: 'id-desc' });
 
-const getBaseUrl = () => api.defaults.baseURL.replace('/api', '');
+const getBaseUrl = () => api.defaults.baseURL.replace('http://speshisq.beget.tech', '');
 
 // 🆕 Универсальный метод получения URL
 const getImageUrl = (flower) => {
@@ -88,7 +88,7 @@ const getImageUrl = (flower) => {
   // Если путь к изображению
   if (flower.img) {
     const clean = flower.img.replace(/^\//, '');
-    return url.replace('http://speshisq.beget.tech', '');;
+    return `${getBaseUrl()}/storage/${clean}`;
   }
   
   // Если есть image_url из модели

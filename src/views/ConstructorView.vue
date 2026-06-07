@@ -13,7 +13,7 @@
      <div class="catalog-grid">
        <div v-for="flower in flowers" :key="flower.id" class="flower-card" @click="addToBouquet(flower)">
          <div class="flower-img">
-          <img :src="flower.flower_image_url || flower.image_url || '/images/placeholder.jpg'" :alt="flower.nazvanie">
+          <img :src="getImageUrl(flower.flower_image_url || flower.image_url || flower.flower_img || flower.img)" :alt="flower.nazvanie">
         </div>
          <div class="flower-info">
            <h3>{{ flower.nazvanie }}</h3>
@@ -80,7 +80,7 @@
        <div class="flowers-grid">
          <div v-for="(item, index) in autoItems" :key="item.id" class="flower-card static">
            <div class="flower-img">
-            <img :src="item.flower_image_url || item.image_url || '/images/placeholder.jpg'" :alt="item.nazvanie">           
+            <img :src="getImageUrl(item.flower_image_url || item.image_url || item.flower_img || item.img)" :alt="item.nazvanie">           
           </div>
            <div class="flower-info">
              <h3>{{ item.nazvanie }}</h3>
@@ -113,6 +113,7 @@ import api from '@/api';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
+import { getImageUrl } from '@/utils/image';
 
 const router = useRouter();
 const authStore = useAuthStore();

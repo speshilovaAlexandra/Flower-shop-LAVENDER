@@ -15,4 +15,16 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://speshisq.beget.tech',
+        changeOrigin: true,
+      },
+      '/storage': {
+        target: 'http://speshisq.beget.tech',
+        changeOrigin: true,
+      },
+    },
+  },
 })

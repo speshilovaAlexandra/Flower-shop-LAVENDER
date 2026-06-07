@@ -49,7 +49,7 @@
              <tr v-for="flower in flowers" :key="flower.id">
                <td>
                  <div class="img-thumb">
-                   <img :src="flower.image_url || '/images/placeholder.jpg'" :alt="flower.nazvanie">
+                   <img :src="getImageUrl(flower.image_url || flower.img)" :alt="flower.nazvanie">
                  </div>
                </td>
                <td>
@@ -146,7 +146,7 @@
                  </label>
                </div>
                <div v-if="editingId && currentFlowerImg && !form.flower_img" class="current-img-hint">
-                 Текущее фото цветка: <img :src="currentFlowerImg" alt="" class="hint-thumb">
+                 Текущее фото цветка: <img :src="getImageUrl(currentFlowerImg)" alt="" class="hint-thumb">
                </div>
              </div>
            </div>
@@ -168,6 +168,7 @@
 import { ref, onMounted } from 'vue';
 import api from '@/api';
 import { useToastStore } from '@/stores/toast';
+import { getImageUrl } from '@/utils/image';
 // 📦 Состояние для CSV
 const selectedCsv = ref(null);
 const uploading = ref(false);
@@ -186,9 +187,7 @@ const uploadCsv = async () => {
   formData.append('csv_file', selectedCsv.value);
 
   try {
-    const { data } = await api.post('/admin/flowers/import-csv', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
+    const { data } = await api.post('/admin/flowers/import-csv', formData);
     importResult.value = data;
     load(); // Обновляем таблицу товаров
   } catch (e) {
@@ -276,14 +275,10 @@ const save = async () => {
     if (editingId.value) {
       // ✅ Исправлено: убран пробел перед PUT
       fd.append('_method', 'PUT');
-      await api.post(`/admin/flowers/${editingId.value}`, fd, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await api.post(`/admin/flowers/${editingId.value}`, fd);
       toast.success('Товар успешно обновлён');
     } else {
-      await api.post('/admin/flowers', fd, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await api.post('/admin/flowers', fd);
       toast.success('Товар добавлен в каталог');
     }
     showModal.value = false;

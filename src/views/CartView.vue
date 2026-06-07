@@ -114,7 +114,7 @@
           <div class="modal-body">
             <div v-for="s in shortages" :key="s.flower_id" class="shortage-block">
               <div class="shortage-item">
-                <img :src="s.image || '/images/placeholder.jpg'" class="item-thumb" alt="">
+                <img :src="getImageUrl(s.image)" class="item-thumb" alt="">
                 <div>
                   <h4>{{ s.name }}</h4>
                   <p>Запрошено: {{ s.requested }} шт. | В наличии: <strong>{{ s.available }} шт.</strong></p>
@@ -150,6 +150,7 @@ import { useRouter } from 'vue-router';
 import api from '@/api';
 import { useToastStore } from '@/stores/toast';
 import { useCart } from '@/composables/useCart';
+import { getImageUrl } from '@/utils/image';
 
 const router = useRouter();
 const toast = useToastStore();

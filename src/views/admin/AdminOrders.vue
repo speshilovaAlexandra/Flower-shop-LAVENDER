@@ -57,7 +57,7 @@
                <div class="package-header">Сборка {{ idx + 1 }} <span class="badge-packaging">{{ getPackagingLabel(pkg.packaging) }}</span></div>
                <div class="items-list">
                  <div v-for="item in pkg.items" :key="item.id" class="item-row">
-                   <div class="item-img"><img :src="getFlowerImg(item.id) || '/images/placeholder.jpg'" alt=""></div>
+                   <div class="item-img"><img :src="getImageUrl(getFlowerImg(item.id))" alt=""></div>
                    <div class="item-info">
                      <div class="item-name">{{ getFlowerName(item.id) }}</div>
                      <div class="item-meta">{{ item.qty }} шт. × {{ formatPrice(getFlowerPrice(item.id)) }}</div>
@@ -78,6 +78,7 @@
 import { onMounted, ref, computed } from 'vue';
 import api from '@/api';
 import { useToastStore } from '@/stores/toast';
+import { getImageUrl } from '@/utils/image';
 
 const orders = ref([]);
 const loading = ref(true);

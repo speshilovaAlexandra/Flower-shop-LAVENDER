@@ -36,7 +36,7 @@
          </div>
          <!-- 🆕 Основная картинка -->
          <img 
-           :src="getSafeImage(flower)" 
+           :src="getImageUrl(flower)" 
            :alt="flower.nazvanie"
            class="card-img"
            :class="{ loaded: imageLoaded[flower.id] }"
@@ -74,37 +74,31 @@ const authStore = useAuthStore();
 const toast = useToastStore();
 const filters = ref({ search: '', minPrice: '', maxPrice: '', sort: 'id-desc' });
 
-//const getBaseUrl = () => api.defaults.baseURL.replace('http://speshisq.beget.tech', '');
-//const getSafeImage = () => api.defaults.baseURL.replace('http://speshisq.beget.tech', '');
+const getBaseUrl = () => api.defaults.baseURL.replace('http://speshisq.beget.tech', '');
 
 // 🆕 Универсальный метод получения URL
-// const getImageUrl = (flower) => {
-//   if (!flower) return '/images/placeholder.jpg';
+const getImageUrl = (flower) => {
+  if (!flower) return '/images/placeholder.jpg';
   
-//   // Если уже полная ссылка
-//   if (flower.image_url && (flower.image_url.startsWith('http://') || flower.image_url.startsWith('https://'))) {
-//     return flower.image_url;
-//   }
+  // Если уже полная ссылка
+  if (flower.image_url && (flower.image_url.startsWith('http://') || flower.image_url.startsWith('https://'))) {
+    return flower.image_url;
+  }
   
-//   // Если путь к изображению
-//   if (flower.img) {
-//     const clean = flower.img.replace(/^\//, '');
-//     return `${getBaseUrl()}/storage/${clean}`;
-//   }
+  // Если путь к изображению
+  if (flower.img) {
+    const clean = flower.img.replace(/^\//, '');
+    return `${getBaseUrl()}/storage/${clean}`;
+  }
   
-//   // Если есть image_url из модели
-//   if (flower.image_url) {
-//     return flower.image_url;
-//   }
+  // Если есть image_url из модели
+  if (flower.image_url) {
+    return flower.image_url;
+  }
   
-//   return '/images/placeholder.jpg';
-// };
-const getSafeImage = (url) => {
-  if (!url) return '';
-  // Эта функция превратит "http://speshisq.beget.tech/storage/..." 
-  // в просто "/storage/...", что заставит браузер использовать наш прокси на Vercel
-  return url.replace('http://speshisq.beget.tech', '');
+  return '/images/placeholder.jpg';
 };
+
 // 🆕 Обработка успешной загрузки
 const onImageLoad = (id) => {
   imageLoaded.value[id] = true;

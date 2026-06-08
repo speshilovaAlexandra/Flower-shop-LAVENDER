@@ -98,7 +98,7 @@
            </button>
          </div>
         
-         <form @submit.prevent="save" class="modal-body" enctype="multipart/form-data">
+         <form @submit.prevent="save" class="modal-body">
            <div class="form-grid">
              <div class="form-group full-width">
                <label>Название товара</label>

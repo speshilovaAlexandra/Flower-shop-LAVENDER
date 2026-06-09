@@ -1,8 +1,8 @@
 {
-  "rewrites": [
-    {
-      "source": "/storage/(.*)",
-      "destination": "http://speshisq.beget.tech/storage/$1"
-    }
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/api/(.*)", "dest": "http://speshisq.beget.tech/api/$1" },
+    { "src": "/storage/(.*)", "dest": "http://speshisq.beget.tech/storage/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }

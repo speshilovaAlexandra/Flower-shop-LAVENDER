@@ -1,7 +1,7 @@
 export const PLACEHOLDER = '/images/placeholder.svg'
 
 // Прямой URL бэкенда (без прокси через Vercel)
-const BACKEND_URL = 'http://speshisq.beget.tech'
+const BACKEND_URL = 'https://speshisq.beget.tech'
 
 export function getImageUrl(imagePath) {
   if (!imagePath) return PLACEHOLDER

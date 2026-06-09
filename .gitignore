@@ -2,7 +2,7 @@ node_modules/
 
 dist/
 dist-ssr/
-public/storage/
+public/storage/*.log
 
 .env
 .env.local

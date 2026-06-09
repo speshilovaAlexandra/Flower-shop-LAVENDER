@@ -1,12 +1,11 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api', // <--- ИЗМЕНИЛИ ЗДЕСЬ. Было: 'http://speshisq.beget.tech/api'
+  baseURL: 'http://speshisq.beget.tech/api', // Прямой URL
   headers: {
     'Content-Type': 'application/json',
   },
 });
-
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');

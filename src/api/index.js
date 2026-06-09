@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // В index.js временно (НЕ ДЛЯ ПРОДАКШЕНА!)
 const api = axios.create({
-  baseURL: 'https://cors-anywhere.herokuapp.com/http://speshisq.beget.tech/api',
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },

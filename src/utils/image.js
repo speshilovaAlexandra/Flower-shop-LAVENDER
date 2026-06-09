@@ -1,21 +1,25 @@
 export const PLACEHOLDER = '/images/placeholder.svg'
 
+// Базовый URL бэкенда
+const BACKEND_URL = 'http://speshisq.beget.tech'
+
 export function getImageUrl(imagePath) {
   if (!imagePath) return PLACEHOLDER
 
-  // Полный URL — извлекаем путь /storage/... для прокси/rewrite
+  // Если уже полный URL с бэкенда
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-    const match = imagePath.match(/\/storage\/.+$/)
-    return match ? match[0] : imagePath
+    return imagePath
   }
 
-  if (imagePath.startsWith('/storage/')) return imagePath
+  // Если путь начинается с /storage/, добавляем бэкенд
+  if (imagePath.startsWith('/storage/')) {
+    return `${BACKEND_URL}${imagePath}`
+  }
 
   // Относительный путь из БД (например flowers/abc.jpg)
-  return `/storage/${imagePath.replace(/^\//, '')}`
+  return `${BACKEND_URL}/storage/${imagePath.replace(/^\//, '')}`
 }
 
-/** Подставляет заглушку, если картинка не загрузилась */
 export function handleImageError(event) {
   const img = event?.target
   if (!img || img.src.endsWith(PLACEHOLDER)) return

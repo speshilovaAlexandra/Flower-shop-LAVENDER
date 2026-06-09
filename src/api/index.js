@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://speshisq.beget.tech/api', // Прямой URL
+  baseURL: '/api', // Прямой URL
   headers: {
     'Content-Type': 'application/json',
   },

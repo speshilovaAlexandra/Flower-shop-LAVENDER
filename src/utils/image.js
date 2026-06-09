@@ -8,14 +8,16 @@ export function getImageUrl(imagePath) {
 
   // Если уже полный URL
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-    return `${BACKEND_URL}/storage/app/flowers/${cleanPath.replace(/^\//, '')}`
+    return imagePath
   }
 
-  // Убираем лишние префиксы, если они есть
-  let cleanPath = `${BACKEND_URL}/storage/app/flowers/${cleanPath.replace(/^\//, '')}`
- 
-  // Для относительных путей (просто название файла)
-  return `${BACKEND_URL}/storage/app/flowers/${cleanPath.replace(/^\//, '')}`
+  // Если путь начинается с /storage/, добавляем бэкенд
+  if (imagePath.startsWith('/storage/')) {
+    return `${BACKEND_URL}${imagePath}`
+  }
+
+  // Относительный путь
+  return `${BACKEND_URL}/storage/${imagePath.replace(/^\//, '')}`
 }
 
 export function handleImageError(event) {

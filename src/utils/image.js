@@ -11,13 +11,26 @@ export function getImageUrl(imagePath) {
     return imagePath
   }
 
-  // Если путь начинается с /storage/, добавляем бэкенд
-  if (imagePath.startsWith('/storage/')) {
-    return `${BACKEND_URL}${imagePath}`
+  // Убираем лишние префиксы, если они есть
+  let cleanPath = imagePath
+    
+  // Если путь начинается с /storage/app/public/ - убираем лишнюю часть
+  if (cleanPath.includes('/storage/app/public/')) {
+    cleanPath = cleanPath.replace('/storage/app/public/', '/storage/')
+  }
+  
+  // Если путь начинается с app/public/ - исправляем
+  if (cleanPath.startsWith('app/public/')) {
+    cleanPath = cleanPath.replace('app/public/', 'storage/')
+  }
+  
+  // Если путь начинается с /storage/ - оставляем как есть
+  if (cleanPath.startsWith('/storage/')) {
+    return `${BACKEND_URL}${cleanPath}`
   }
 
-  // Относительный путь
-  return `${BACKEND_URL}/storage/${imagePath.replace(/^\//, '')}`
+  // Для относительных путей (просто название файла)
+  return `${BACKEND_URL}/storage/flowers/${cleanPath.replace(/^\//, '')}`
 }
 
 export function handleImageError(event) {

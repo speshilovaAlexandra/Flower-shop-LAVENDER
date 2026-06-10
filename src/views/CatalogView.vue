@@ -159,50 +159,6 @@ const seo = {
 };
 </script>
 <style scoped>
-/* 🆕 Стили для заглушки */
-.image-placeholder {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-  transition: opacity 0.3s ease;
-}
-
-.placeholder-icon {
-  width: 48px;
-  height: 48px;
-  color: #9ca3af;
-  opacity: 0.6;
-}
-
-.card-img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity 0.3s ease, transform 0.5s ease;
-  cursor: pointer;
-  z-index: 2;
-}
-
-.card-img.loaded {
-  opacity: 1;
-}
-
-.product-card:hover .card-img.loaded {
-  transform: scale(1.05);
-}
-
-/* Остальные ваши стили остаются без изменений */
 :root {
   --primary: #481C69;
   --primary-light: #6d3a96;
@@ -212,8 +168,8 @@ const seo = {
   --text-muted: #6b7280;
   --border: #e5e7eb;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   --radius: 12px;
 }
 
@@ -296,16 +252,15 @@ const seo = {
 .product-grid {
   display: flex;
   flex-wrap: wrap;
-  margin: -20px;
   gap: 40px;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  flex-direction: row;
 }
 
 .product-card {
-  margin: 20px;
-  width: calc(25% - 40px);
+  width: calc(25% - 30px);
+  min-width: 240px;
+  max-width: 280px;
   background: var(--bg-card);
   border-radius: var(--radius);
   overflow: hidden;
@@ -314,8 +269,7 @@ const seo = {
   display: flex;
   flex-direction: column;
   border: 1px solid rgba(0, 0, 0, 0.03);
-  height: 370px;
-  width: 260px;
+  cursor: pointer;
 }
 
 .product-card:hover {
@@ -324,31 +278,73 @@ const seo = {
 }
 
 .card-image-wrapper {
-  object-fit: cover;
   position: relative;
-  width: 300px;
-  height: 300px;
+  width: 100%;
   padding-top: 100%;
   background: #f3f4f6;
   overflow: hidden;
 }
 
+.image-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  transition: opacity 0.3s ease;
+}
+
+.placeholder-icon {
+  width: 48px;
+  height: 48px;
+  color: #9ca3af;
+  opacity: 0.6;
+}
+
+.card-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.5s ease;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.card-img.loaded {
+  opacity: 1;
+}
+
+.product-card:hover .card-img.loaded {
+  transform: scale(1.05);
+}
+
 .card-details {
-  padding: 24px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
 }
 
 .product-name {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--text-main);
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   line-height: 1.4;
   display: -webkit-box;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  min-height: 48px;
 }
 
 .product-footer {
@@ -356,10 +352,12 @@ const seo = {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .product-price {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: var(--primary);
 }
@@ -368,10 +366,10 @@ const seo = {
   background: none;
   border: 1px solid var(--border);
   color: var(--text-main);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  padding: 8px 16px;
+  padding: 8px 14px;
   border-radius: 8px;
   transition: all 0.2s;
 }
@@ -421,155 +419,263 @@ const seo = {
   font-size: 1rem;
 }
 
-/* Замените существующие @media в CatalogView.vue на эти */
+/* ========================================= */
+/* АДАПТИВНЫЕ СТИЛИ ДЛЯ ТЕЛЕФОНОВ */
+/* ========================================= */
 
-@media (max-width: 1200px) {
+/* Планшеты (до 1024px) */
+@media (max-width: 1024px) {
   .product-card {
-    width: calc(33.333% - 40px);
+    width: calc(33.333% - 27px);
+    min-width: 220px;
   }
 }
 
-@media (max-width: 991px) {
-  .catalog-page {
-    padding: 40px 30px;
-  }
-  .page-title {
-    font-size: 2.5rem;
-  }
-  .product-grid {
-    gap: 30px;
-    margin: -15px;
-  }
-  .product-card {
-    width: calc(33.333% - 30px);
-    margin: 15px;
-  }
-}
-
+/* Планшеты вертикально (до 768px) */
 @media (max-width: 768px) {
   .catalog-page {
-    padding: 30px 20px;
+    padding: 40px 20px;
   }
-  
+
   .page-title {
     font-size: 2rem;
-    margin-bottom: 30px;
+    margin-bottom: 25px;
   }
-  
+
   .filters {
-    overflow-x: auto;
-    justify-content: flex-start;
-    flex-wrap: nowrap;
-    padding-bottom: 10px;
+    gap: 10px;
     margin-bottom: 30px;
-    -webkit-overflow-scrolling: touch;
+    justify-content: center;
   }
-  
-  .filters::-webkit-scrollbar {
-    display: none;
-  }
-  
+
   .filter-input {
-    white-space: nowrap;
-    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 0.9rem;
   }
-  
+
   .filter-input.num {
-    width: 100px;
+    width: 95px;
   }
-  
+
+  .filter-input.select {
+    min-width: 140px;
+  }
+
+  .filter-btn {
+    padding: 8px 18px;
+  }
+
   .product-grid {
     gap: 20px;
-    margin: -10px;
   }
-  
+
   .product-card {
-    width: calc(50% - 20px);
-    margin: 10px;
-    height: auto;
-    min-height: 320px;
+    width: calc(50% - 10px);
+    min-width: 160px;
+    max-width: none;
   }
-  
-  .card-image-wrapper {
-    height: auto;
-    padding-top: 100%;
-  }
-  
+
   .card-details {
     padding: 15px;
   }
-  
+
   .product-name {
     font-size: 1rem;
+    min-height: 42px;
     margin-bottom: 10px;
-    -webkit-line-clamp: 2;
   }
-  
+
   .product-price {
     font-size: 1.2rem;
   }
-  
+
   .btn-text-cart {
     padding: 6px 12px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 }
 
-@media (max-width: 480px) {
+/* Мобильные телефоны (до 576px) */
+@media (max-width: 576px) {
   .catalog-page {
-    padding: 20px 12px;
+    padding: 30px 15px;
   }
-  
+
   .page-title {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     margin-bottom: 20px;
   }
-  
+
   .filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
     gap: 8px;
+    padding-bottom: 12px;
+    margin-bottom: 25px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
   }
-  
+
+  .filters::-webkit-scrollbar {
+    height: 3px;
+  }
+
+  .filters::-webkit-scrollbar-track {
+    background: var(--border);
+    border-radius: 10px;
+  }
+
+  .filters::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 10px;
+  }
+
   .filter-input {
+    white-space: nowrap;
+    flex-shrink: 0;
     padding: 8px 12px;
     font-size: 0.85rem;
   }
-  
+
   .filter-input.num {
     width: 85px;
   }
-  
+
+  .filter-input.select {
+    min-width: 130px;
+  }
+
   .filter-btn {
     padding: 8px 16px;
     font-size: 0.85rem;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
-  
+
+  .product-grid {
+    gap: 15px;
+  }
+
   .product-card {
-    width: calc(50% - 16px);
-    margin: 8px;
+    width: calc(50% - 7.5px);
+    min-width: 140px;
+    border-radius: 10px;
   }
-  
+
   .card-details {
     padding: 12px;
   }
-  
+
   .product-name {
     font-size: 0.9rem;
+    min-height: 38px;
     margin-bottom: 8px;
+    -webkit-line-clamp: 2;
   }
-  
+
   .product-footer {
     flex-direction: column;
+    align-items: stretch;
     gap: 8px;
-    align-items: flex-start;
   }
-  
+
   .product-price {
     font-size: 1.1rem;
+    text-align: center;
   }
-  
+
   .btn-text-cart {
     width: 100%;
     text-align: center;
+    padding: 8px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Очень маленькие телефоны (до 400px) */
+@media (max-width: 400px) {
+  .catalog-page {
+    padding: 20px 12px;
+  }
+
+  .page-title {
+    font-size: 1.4rem;
+  }
+
+  .filters {
+    gap: 6px;
+    padding-bottom: 10px;
+  }
+
+  .filter-input {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+
+  .filter-input.num {
+    width: 75px;
+  }
+
+  .filter-input.select {
+    min-width: 120px;
+  }
+
+  .filter-btn {
+    padding: 6px 14px;
+    font-size: 0.8rem;
+  }
+
+  .product-grid {
+    gap: 12px;
+  }
+
+  .product-card {
+    width: calc(50% - 6px);
+    min-width: 130px;
+  }
+
+  .card-details {
+    padding: 10px;
+  }
+
+  .product-name {
+    font-size: 0.85rem;
+    min-height: 34px;
+    margin-bottom: 6px;
+  }
+
+  .product-price {
+    font-size: 1rem;
+  }
+
+  .btn-text-cart {
+    padding: 6px;
+    font-size: 0.75rem;
+  }
+
+  .placeholder-icon {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* Альбомная ориентация на телефонах */
+@media (max-width: 768px) and (orientation: landscape) {
+  .catalog-page {
+    padding: 25px 20px;
+  }
+
+  .product-grid {
+    gap: 15px;
+  }
+
+  .product-card {
+    width: calc(33.333% - 10px);
+  }
+
+  .product-name {
+    font-size: 0.9rem;
   }
 }
 </style>

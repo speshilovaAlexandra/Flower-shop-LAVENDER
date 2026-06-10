@@ -15,13 +15,13 @@ export function getImageUrl(imagePath) {
   let cleanPath = imagePath.replace(/^\//, '')
   
   // Если путь уже содержит полную структуру storage/app/public/flowers/
-  if (cleanPath.includes('storage/app/flowers/')) {
+  if (cleanPath.includes('storage/app/public/flowers/')) {
     return `${BACKEND_URL}/${cleanPath}`
   }
   
   // Формируем правильный URL для Beget
   // Beget ожидает: http://site.ru/storage/app/public/flowers/имя_файла
-  return `${BACKEND_URL}/storage/app/flowers/${cleanPath}`
+  return `${BACKEND_URL}/storage/app/public/flowers/${cleanPath}`
 }
 
 export function handleImageError(event) {

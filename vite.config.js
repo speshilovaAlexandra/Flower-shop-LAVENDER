@@ -18,11 +18,11 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://lavender-flower.ru',
+        target: 'https://lavender-flower.ru',
         changeOrigin: true,
       },
       '/storage': {
-        target: 'http://lavender-flower.ru',
+        target: 'https://lavender-flower.ru',
         changeOrigin: true,
       },
     },

@@ -75,7 +75,7 @@ const authStore = useAuthStore();
 const toast = useToastStore();
 const filters = ref({ search: '', minPrice: '', maxPrice: '', sort: 'id-desc' });
 
-const getBaseUrl = () => api.defaults.baseURL.replace('https://lavender-flower.ru', '');
+//const getBaseUrl = () => api.defaults.baseURL.replace('https://lavender-flower.ru', '');
 
 // // 🆕 Универсальный метод получения URL
 // const getImageUrl = (flower) => {

@@ -1,7 +1,7 @@
-export const PLACEHOLDER = '/image/placeholder.jpg'
+// export const PLACEHOLDER = '/image/placeholder.jpg'
 
-// Прямой URL бэкенда
-const BACKEND_URL = 'https://lavender-flower.ru'
+// // Прямой URL бэкенда
+// const BACKEND_URL = 'https://lavender-flower.ru'
 
 // export function getImageUrl(imagePath) {
 //   if (!imagePath) return PLACEHOLDER
@@ -26,20 +26,39 @@ const BACKEND_URL = 'https://lavender-flower.ru'
 //   // Beget ожидает: http://site.ru/storage/app/public/flowers/имя_файла
 //   // return `${BACKEND_URL}/storage/app/public/flowers/${cleanPath}`
 // }
+// export function getImageUrl(imagePath) {
+//   if (!imagePath) return PLACEHOLDER
+//   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+//     return imagePath
+//   }
+  
+//   let cleanPath = imagePath.replace(/^\//, '')
+//   // Правильный путь для Beget
+//   return `${BACKEND_URL}/storage/${cleanPath}`
+// }
+
+// export function handleImageError(event) {
+//   const img = event?.target
+//   if (!img || img.src.endsWith(PLACEHOLDER)) return
+//   img.onerror = null
+//   img.src = PLACEHOLDER
+// }
+export const PLACEHOLDER = '/images/placeholder.jpg'
+const BACKEND_URL = 'https://lavender-flower.ru'
+
 export function getImageUrl(imagePath) {
   if (!imagePath) return PLACEHOLDER
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
     return imagePath
   }
-  
-  let cleanPath = imagePath.replace(/^\//, '')
-  // Правильный путь для Beget
+  // Убираем лишние слеши
+  let cleanPath = imagePath.replace(/^\/+/, '')
   return `${BACKEND_URL}/storage/${cleanPath}`
 }
 
 export function handleImageError(event) {
   const img = event?.target
-  if (!img || img.src.endsWith(PLACEHOLDER)) return
+  if (!img || img.src?.includes(PLACEHOLDER)) return
   img.onerror = null
   img.src = PLACEHOLDER
 }

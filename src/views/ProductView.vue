@@ -284,53 +284,208 @@ onMounted(async () => {
 .login-hint a{color:var(--primary);font-weight:600;text-decoration:underline}
 .login-hint a:hover{color:var(--primary-dark)}
 
-@media (max-width:991px){
-  .product-page-wrapper{margin:10px auto}
-  .product-container{padding:30px 20px;gap:40px;display:flex;flex-direction:column}
-  .product-title{font-size:2rem}
-  .price-tag{font-size:1.75rem}
-  .image-frame{aspect-ratio:4/3}
+/* Замените существующие @media в ProductView.vue на эти */
+
+@media (max-width: 991px) {
+  .product-page-wrapper {
+    margin: 10px auto;
+  }
+  
+  .product-container {
+    padding: 30px 20px;
+    gap: 40px;
+    flex-direction: column;
+  }
+  
+  .product-title {
+    font-size: 2rem;
+  }
+  
+  .price-tag {
+    font-size: 1.75rem;
+  }
+  
+  .product-gallery {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  .image-frame {
+    aspect-ratio: 1/1;
+    width: 100%;
+    height: auto;
+  }
+  
+  .product-info {
+    width: 100%;
+  }
 }
 
-@media (max-width:767px){
-  .product-page-wrapper{margin:0 auto}
-  .product-container{padding:20px 15px;gap:30px;display:flex;flex-direction:column}
-  .product-title{font-size:1.75rem}
-  .price-tag{font-size:1.5rem;margin:5px 0}
-  .breadcrumb{font-size:0.85rem}
-  .description-box h3{font-size:1rem}
-  .description-box p{font-size:0.95rem}
-  .image-frame{aspect-ratio:1/1;border-radius:16px}
-  .actions-area{margin-top:25px;padding-top:25px}
-  .quantity-control{flex-direction:column;align-items:flex-start;gap:10px}
-  .qty-buttons button{width:40px;height:40px;font-size:1rem}
-  .qty-value{width:45px;font-size:1rem}
-  .btn-add-to-cart{padding:16px;font-size:1rem;border-radius:10px}
+@media (max-width: 767px) {
+  .product-page-wrapper {
+    margin: 0 auto;
+  }
+  
+  .product-container {
+    padding: 20px 15px;
+    gap: 25px;
+  }
+  
+  .product-title {
+    font-size: 1.5rem;
+  }
+  
+  .price-tag {
+    font-size: 1.3rem;
+    margin: 5px 0;
+  }
+  
+  .breadcrumb {
+    font-size: 0.85rem;
+  }
+  
+  .description-box h3 {
+    font-size: 1rem;
+  }
+  
+  .description-box p {
+    font-size: 0.95rem;
+  }
+  
+  .image-frame {
+    border-radius: 16px;
+  }
+  
+  .actions-area {
+    margin-top: 20px;
+    padding-top: 20px;
+  }
+  
+  .quantity-control {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  .qty-buttons button {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .qty-value {
+    width: 45px;
+    font-size: 1rem;
+  }
+  
+  .btn-add-to-cart {
+    padding: 16px;
+    font-size: 1rem;
+    border-radius: 10px;
+  }
 }
 
-@media (max-width:479px){
-  .product-page-wrapper{margin:0 auto}
-  .state-container{padding:60px 15px;min-height:50vh}
-  .spinner{width:40px;height:40px}
-  .error-state .icon{font-size:3rem}
-  .error-state h2{font-size:1.3rem}
-  .error-state p{font-size:0.9rem}
-  .btn-back{padding:10px 20px;font-size:0.9rem}
-  .product-container{padding:15px 12px;gap:20px}
-  .product-gallery{display:none;border-radius:20px}
-  .product-info-wrapper{flex:1 1 100%}
-  .product-title{font-size:1.5rem;line-height:1.3}
-  .price-tag{font-size:1.3rem}
-  .breadcrumb{font-size:0.8rem;gap:5px}
-  .description-box h3{font-size:0.95rem;margin-bottom:8px}
-  .description-box p{font-size:0.9rem;line-height:1.6}
-  .actions-area{margin-top:20px;padding-top:20px;gap:15px}
-  .quantity-control{width:100%}
-  .quantity-control label{font-size:0.9rem}
-  .qty-buttons{flex:1}
-  .qty-buttons button{width:38px;height:38px;font-size:0.9rem}
-  .qty-value{width:40px;font-size:0.95rem}
-  .btn-add-to-cart{padding:16px;font-size:0.95rem;border-radius:10px}
-  .login-hint{font-size:0.85rem}
+@media (max-width: 480px) {
+  .product-page-wrapper {
+    margin: 0 auto;
+  }
+  
+  .state-container {
+    padding: 60px 15px;
+    min-height: 50vh;
+  }
+  
+  .spinner {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .error-state .icon {
+    font-size: 3rem;
+  }
+  
+  .error-state h2 {
+    font-size: 1.3rem;
+  }
+  
+  .error-state p {
+    font-size: 0.9rem;
+  }
+  
+  .btn-back {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+  
+  .product-container {
+    padding: 15px 12px;
+    gap: 20px;
+  }
+  
+  .product-title {
+    font-size: 1.3rem;
+    line-height: 1.3;
+  }
+  
+  .price-tag {
+    font-size: 1.2rem;
+  }
+  
+  .breadcrumb {
+    font-size: 0.8rem;
+    gap: 5px;
+  }
+  
+  .description-box h3 {
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+  }
+  
+  .description-box p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  
+  .actions-area {
+    margin-top: 15px;
+    padding-top: 15px;
+    gap: 15px;
+  }
+  
+  .quantity-control {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .quantity-control label {
+    font-size: 0.9rem;
+  }
+  
+  .qty-buttons {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .qty-buttons button {
+    width: 38px;
+    height: 38px;
+  }
+  
+  .qty-value {
+    width: 40px;
+    font-size: 0.95rem;
+  }
+  
+  .btn-add-to-cart {
+    padding: 14px;
+    font-size: 0.95rem;
+    border-radius: 10px;
+  }
+  
+  .login-hint {
+    font-size: 0.85rem;
+  }
 }
 </style>

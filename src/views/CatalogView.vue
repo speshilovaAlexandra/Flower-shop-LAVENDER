@@ -421,28 +421,155 @@ const seo = {
   font-size: 1rem;
 }
 
+/* Замените существующие @media в CatalogView.vue на эти */
+
+@media (max-width: 1200px) {
+  .product-card {
+    width: calc(33.333% - 40px);
+  }
+}
+
 @media (max-width: 991px) {
-  .catalog-page { padding: 40px 30px; }
-  .page-title { font-size: 2.5rem; }
-  .product-grid { gap: 30px; margin: -15px; }
-  .product-card { width: calc(33.333% - 30px); flex: 1 0 240px; margin: 15px; }
+  .catalog-page {
+    padding: 40px 30px;
+  }
+  .page-title {
+    font-size: 2.5rem;
+  }
+  .product-grid {
+    gap: 30px;
+    margin: -15px;
+  }
+  .product-card {
+    width: calc(33.333% - 30px);
+    margin: 15px;
+  }
 }
 
-@media (max-width: 767px) {
-  .catalog-page { padding: 30px 20px; }
-  .page-title { font-size: 2rem; }
-  .product-grid { gap: 15px; margin: -10px; }
-  .product-card { width: calc(50% - 20px); flex: 1 0 45%; margin: 10px; }
+@media (max-width: 768px) {
+  .catalog-page {
+    padding: 30px 20px;
+  }
+  
+  .page-title {
+    font-size: 2rem;
+    margin-bottom: 30px;
+  }
+  
+  .filters {
+    overflow-x: auto;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .filters::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .filter-input {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  
+  .filter-input.num {
+    width: 100px;
+  }
+  
+  .product-grid {
+    gap: 20px;
+    margin: -10px;
+  }
+  
+  .product-card {
+    width: calc(50% - 20px);
+    margin: 10px;
+    height: auto;
+    min-height: 320px;
+  }
+  
+  .card-image-wrapper {
+    height: auto;
+    padding-top: 100%;
+  }
+  
+  .card-details {
+    padding: 15px;
+  }
+  
+  .product-name {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    -webkit-line-clamp: 2;
+  }
+  
+  .product-price {
+    font-size: 1.2rem;
+  }
+  
+  .btn-text-cart {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+  }
 }
 
-@media (max-width: 479px) {
-  .catalog-page { padding: 20px 15px; }
-  .page-title { font-size: 1.75rem; }
-  .filters { justify-content: center; overflow-x: auto; width: 100%; padding-bottom: 10px; -ms-overflow-style: none; scrollbar-width: none; }
-  .filters::-webkit-scrollbar { display: none; }
-  .filter-btn { white-space: nowrap; flex-shrink: 0; }
-  .product-grid { display: flex; gap: 20px; margin: -10px; height: 100%; width: 100%; flex-direction: row; align-items: center; align-content: center; flex-wrap: wrap; }
-  .product-card { width: calc(50% - 20px); margin: 10px; }
-  .product-footer { display: flex; flex-direction: column; align-items: center; }
+@media (max-width: 480px) {
+  .catalog-page {
+    padding: 20px 12px;
+  }
+  
+  .page-title {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+  }
+  
+  .filters {
+    gap: 8px;
+  }
+  
+  .filter-input {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+  
+  .filter-input.num {
+    width: 85px;
+  }
+  
+  .filter-btn {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+  
+  .product-card {
+    width: calc(50% - 16px);
+    margin: 8px;
+  }
+  
+  .card-details {
+    padding: 12px;
+  }
+  
+  .product-name {
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+  }
+  
+  .product-footer {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  
+  .product-price {
+    font-size: 1.1rem;
+  }
+  
+  .btn-text-cart {
+    width: 100%;
+    text-align: center;
+  }
 }
 </style>

@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "http://lavender-flower.ru//api/$1"
+      "destination": "http://lavender-flower.ru/api/$1"
     },
     {
       "source": "/storage/(.*)",

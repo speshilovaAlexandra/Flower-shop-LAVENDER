@@ -2,13 +2,14 @@ export const PLACEHOLDER = '/images/placeholder.jpg'
 
 const BACKEND_URL = 'https://lavender-flower.ru'
 
-export function getImageUrl(imagePath) {
+export function getImageUrl(imagePath) { 
+  console.log('Оригинальный путь:', imagePath)
   if (!imagePath) return PLACEHOLDER
-   console.log('Оригинальный путь:', imagePath)
-  // Если уже полный URL
+    // Если уже полный URL
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
     return imagePath
   console.log('Итоговый URL:', result)
+     return result
   }
   
   // Убираем лишние слеши в начале
@@ -24,10 +25,6 @@ export function getImageUrl(imagePath) {
   return `${BACKEND_URL}/${cleanPath}`
 }
 
-  
-  // ... остальной код ...
-  
-  return result
 export function handleImageError(event) {
   const img = event?.target
   if (!img || img.src?.includes(PLACEHOLDER)) return

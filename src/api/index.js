@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // В index.js временно (НЕ ДЛЯ ПРОДАКШЕНА!)
 const api = axios.create({
-  baseURL: 'http://lavender-flower.ru/api',
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },

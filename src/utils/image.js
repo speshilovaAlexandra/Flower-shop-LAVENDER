@@ -1,21 +1,21 @@
 export const PLACEHOLDER = '/images/placeholder.jpg'
-const BACKEND_URL = 'https://lavender-flower.ru'
 
 export function getImageUrl(imagePath) {
   if (!imagePath) return PLACEHOLDER
   
-  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-    // Если путь уже полный, но ведет в неверное место — исправляем
-    if (imagePath.includes('/storage/flowers/') && !imagePath.includes('/storage/app/public/')) {
-      const fileName = imagePath.split('/').pop()
-      return `${BACKEND_URL}/storage/app/public/flowers/${fileName}`
-    }
-    return imagePath
+  // Извлекаем имя файла из любого пути
+  let filename = imagePath.split('/').pop()
+  
+  // Убираем параметры запроса, если есть
+  filename = filename.split('?')[0]
+  
+  // Проверяем, что это действительно имя файла (с расширением)
+  if (!filename.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+    return PLACEHOLDER
   }
   
-  const cleanPath = imagePath.replace(/^\/+/, '')
-  const fileName = cleanPath.split('/').pop()
-  return `${BACKEND_URL}/storage/app/public/flowers/${fileName}`
+  // Формируем правильный URL через API маршрут
+  return `/api/storage/flowers/${filename}`
 }
 
 export function handleImageError(event) {

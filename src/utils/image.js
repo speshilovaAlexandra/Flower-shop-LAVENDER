@@ -1,7 +1,7 @@
 export const PLACEHOLDER = '/images/placeholder.svg'
 
 // Прямой URL бэкенда
-const BACKEND_URL = 'http://lavender-flower.ru/'
+const BACKEND_URL = 'http://lavender-flower.ru'
 
 export function getImageUrl(imagePath) {
   if (!imagePath) return PLACEHOLDER

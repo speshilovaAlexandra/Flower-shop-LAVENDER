@@ -1,4 +1,4 @@
-export const PLACEHOLDER = '/images/placeholder.svg'
+export const PLACEHOLDER = '/image/placeholder.jpg'
 
 // Прямой URL бэкенда
 const BACKEND_URL = 'https://lavender-flower.ru'

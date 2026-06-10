@@ -6,7 +6,7 @@
     },
     {
       "source": "/storage/(.*)",
-      "destination": "http://lavender-flower.ru//storage/$1"
+      "destination": "http://lavender-flower.ru/storage/$1"
     }
   ]
 }

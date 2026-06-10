@@ -1,28 +1,21 @@
 export const PLACEHOLDER = '/images/placeholder.jpg'
-
 const BACKEND_URL = 'https://lavender-flower.ru'
 
-export function getImageUrl(imagePath) { 
-  console.log('Оригинальный путь:', imagePath)
+export function getImageUrl(imagePath) {
   if (!imagePath) return PLACEHOLDER
-    // Если уже полный URL
+  
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    // Если путь уже полный, но ведет в неверное место — исправляем
+    if (imagePath.includes('/storage/flowers/') && !imagePath.includes('/storage/app/public/')) {
+      const fileName = imagePath.split('/').pop()
+      return `${BACKEND_URL}/storage/app/public/flowers/${fileName}`
+    }
     return imagePath
-  console.log('Итоговый URL:', result)
-     return result
   }
   
-  // Убираем лишние слеши в начале
-  let cleanPath = imagePath.replace(/^\/+/, '')
-  
-  // Просто имя файла (без папок)
-  if (!cleanPath.includes('/')) {
-    // Картинки лежат в storage/app/public/flowers/
-    return `${BACKEND_URL}/storage/app/public/flowers/${cleanPath}`
-  }
-  
-  // Если путь уже содержит папки, просто добавляем домен
-  return `${BACKEND_URL}/${cleanPath}`
+  const cleanPath = imagePath.replace(/^\/+/, '')
+  const fileName = cleanPath.split('/').pop()
+  return `${BACKEND_URL}/storage/app/public/flowers/${fileName}`
 }
 
 export function handleImageError(event) {

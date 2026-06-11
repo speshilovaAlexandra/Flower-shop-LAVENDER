@@ -276,7 +276,7 @@ import { ref, onMounted } from 'vue';
 import api from '@/api';
 import { useToastStore } from '@/stores/toast';
 import { getImageUrl, handleImageError } from '@/utils/image';
-import { useModalStore } from '@/stores/modal';
+// import { useModalStore } from '@/stores/modal';
   
 const selectedCsv = ref(null);
 const uploading = ref(false);

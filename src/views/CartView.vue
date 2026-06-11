@@ -579,4 +579,95 @@ onMounted(() => {
 .bouquet-options label { font-weight: 600; font-size: 0.9rem; }
 .form-select-small { padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
 .packaging-price { color: var(--text-muted); font-size: 0.9rem; margin-left: auto; }
-.summary-section { flex: 0 0 400px; background: var(--bg-light); padding: 30px; border-radius: 
+.summary-section { flex: 0 0 400px; background: var(--bg-light); padding: 30px; border-radius: 12px; border: 1px solid var(--border); position: sticky; top: 100px; }
+.summary-section h3 { margin-top: 0; margin-bottom: 25px; font-size: 1.3rem; }
+.summary-row { display: flex; justify-content: space-between; margin-bottom: 12px; color: var(--text-muted); }
+.summary-row.total { margin-top: 20px; padding-top: 20px; border-top: 2px solid var(--border); color: var(--text-main); font-weight: 700; font-size: 1.3rem; }
+.pickup-section { margin: 25px 0; }
+.pickup-section label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; }
+.form-select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; }
+.btn-checkout { width: 100%; padding: 16px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 600; cursor: pointer; }
+.btn-checkout:disabled { background: #ccc; cursor: not-allowed; }
+.error-msg { display: flex; align-items: center; gap: 10px; color: var(--danger); background: #fee2e2; padding: 12px; border-radius: 8px; font-size: 0.9rem; margin-top: 15px; }
+.bouquet-switcher { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.bouquet-switcher label { font-size: 0.85rem; color: var(--text-muted); }
+
+/* ===== АДАПТИВ ПОД 390px ===== */
+@media (max-width: 768px) {
+  .cart-page { padding: 40px 20px; }
+  .page-title { font-size: 1.8rem; margin-bottom: 25px; }
+  .cart-content { flex-direction: column; gap: 30px; }
+  .cart-item { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .item-details { width: 100%; }
+  .item-controls { width: 100%; flex-wrap: wrap; justify-content: space-between; }
+  .summary-section { width: 100%; position: static; padding: 20px; }
+}
+
+@media (max-width: 480px) {
+  .cart-page { padding: 30px 15px; }
+  .page-title { font-size: 1.5rem; margin-bottom: 20px; }
+  .bouquet-title { font-size: 1.2rem; }
+  .cart-item { flex-direction: column; align-items: flex-start; gap: 10px; padding: 12px 0; }
+  .item-details { width: 100%; gap: 10px; }
+  .item-image-placeholder { width: 50px; height: 50px; font-size: 1rem; }
+  .item-text h4 { font-size: 0.95rem; }
+  .item-price { font-size: 0.8rem; }
+  .item-controls { width: 100%; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+  .bouquet-switcher { width: 100%; }
+  .bouquet-switcher select { flex: 1; }
+  .qty-control { order: 1; }
+  .item-actions { order: 2; display: flex; gap: 12px; align-items: center; }
+  .item-total { font-size: 1rem; min-width: 70px; }
+  .bouquet-options { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .packaging-price { margin-left: 0; }
+  .summary-section { padding: 16px; }
+  .summary-row.total { font-size: 1.1rem; }
+  .btn-checkout { padding: 14px; font-size: 1rem; }
+  .btn-add-bouquet { padding: 12px; font-size: 0.9rem; }
+}
+
+@media (max-width: 390px) {
+  .cart-page { padding: 20px 12px; }
+  .page-title { font-size: 1.3rem; margin-bottom: 16px; }
+  .empty-state { padding: 60px 15px; }
+  .empty-icon { font-size: 3.5rem; margin-bottom: 15px; }
+  .empty-state h3 { font-size: 1.1rem; }
+  .empty-state p { font-size: 0.85rem; }
+  .btn-browse { padding: 10px 20px; font-size: 0.85rem; }
+  .bouquet-group { margin-bottom: 25px; }
+  .bouquet-title { font-size: 1rem; }
+  .cart-item { padding: 10px 0; }
+  .item-image-placeholder { width: 45px; height: 45px; }
+  .item-text h4 { font-size: 0.85rem; }
+  .qty-control button { width: 28px; height: 28px; font-size: 0.9rem; }
+  .qty-input { width: 40px; font-size: 0.85rem; }
+  .item-total { font-size: 0.9rem; min-width: 60px; }
+  .btn-remove { font-size: 1rem; }
+  .bouquet-options { padding: 10px; }
+  .form-select-small { padding: 6px; font-size: 0.8rem; }
+  .summary-section h3 { font-size: 1.1rem; margin-bottom: 15px; }
+  .summary-row { font-size: 0.85rem; }
+  .summary-row.total { font-size: 1rem; }
+  .form-select { padding: 10px; font-size: 0.85rem; }
+  .btn-checkout { padding: 12px; font-size: 0.9rem; }
+  .error-msg { padding: 10px; font-size: 0.8rem; }
+
+  /* Модальное окно на 390px */
+  .modal-overlay { padding: 10px; }
+  .replacement-modal { max-width: 100%; border-radius: 20px; }
+  .modal-header { padding: 16px 20px; flex-wrap: wrap; }
+  .modal-header h3 { font-size: 1.1rem; }
+  .btn-close-modal { width: 32px; height: 32px; font-size: 1rem; }
+  .modal-body { padding: 20px; }
+  .modal-description { font-size: 0.85rem; margin-bottom: 16px; }
+  .shortage-item { flex-direction: column; align-items: center; text-align: center; }
+  .item-thumb { width: 50px; height: 50px; }
+  .shortage-info h4 { font-size: 0.9rem; }
+  .shortage-info p { font-size: 0.75rem; }
+  .option-title { font-size: 0.75rem; }
+  .btn-suggest, .btn-reduce, .btn-remove-item { padding: 10px 12px; font-size: 0.8rem; gap: 8px; }
+  .suggestion-price { font-size: 0.75rem; }
+  .modal-footer { padding: 16px 20px; }
+  .btn-secondary-modal { padding: 8px 20px; font-size: 0.85rem; }
+}
+</style>

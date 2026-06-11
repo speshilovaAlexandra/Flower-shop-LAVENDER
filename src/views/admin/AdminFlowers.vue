@@ -431,7 +431,7 @@ const openNew = () => {
 
 const openEdit = (flower) => {
   editingId.value = flower.id;
-  currentFlowerImg.value = flower.flower_image_url;
+  currentFlowerImg.value = flower.flower_image_url; // 🆕 Запоминаем текущее фото цветка
   form.value = { 
     nazvanie: flower.nazvanie, 
     price: flower.price, 
@@ -442,39 +442,16 @@ const openEdit = (flower) => {
   };
   showModal.value = true;
 };
-// const showModal = ref(false);
+
 const deleteItem = async (id) => {
-  // Проверяем, что confirmModal существует
-  if (!confirmModal.value) {
-    // fallback на старый confirm если что-то пошло не так
-    if (confirm('Вы уверены, что хотите удалить этот товар?')) {
-      try {
-        await api.delete(`/admin/flowers/${id}`);
-        toast.success('Товар успешно удалён');
-        load();
-      } catch (e) {
-        toast.error('Ошибка при удалении товара');
-      }
+  if (confirm('Вы уверены, что хотите удалить этот товар?')) {
+    try {
+      await api.delete(`/admin/flowers/${id}`);
+      toast.success('Товар удалён');
+      load();
+    } catch (e) {
+      toast.error('Ошибка при удалении');
     }
-    return;
-  }
-  
-  const confirmed = await confirmModal.value.show({
-    title: 'Удаление товара',
-    message: 'Вы уверены, что хотите удалить этот товар? Это действие нельзя отменить.',
-    confirmText: 'Да, удалить',
-    cancelText: 'Отмена',
-    type: 'danger'
-  });
-  
-  if (!confirmed) return;
-  
-  try {
-    await api.delete(`/admin/flowers/${id}`);
-    toast.success('Товар успешно удалён');
-    load();
-  } catch (e) {
-    toast.error('Ошибка при удалении товара: ' + (e.response?.data?.message || 'Неизвестная ошибка'));
   }
 };
 

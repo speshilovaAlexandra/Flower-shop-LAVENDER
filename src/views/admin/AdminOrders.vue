@@ -39,7 +39,7 @@
               <tr>
                 <th style="width:60px">ID</th>
                 <th>Клиент</th>
-                <th>Телефон</th> <!-- 🆕 Новая колонка -->
+                <th>Телефон</th>
                 <th>Сумма</th>
                 <th>Статус</th>
                 <th>Дата</th>
@@ -54,7 +54,6 @@
                   <div class="cell-sub">{{ order.user?.email || '—' }}</div>
                 </td>
                 <td>
-                  <!-- 🆕 Отображение телефона с иконкой и возможностью клика -->
                   <div v-if="order.phone" class="phone-cell">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.574 2.81.7A2 2 0 0 1 22 16.92z"/>
@@ -71,7 +70,7 @@
                     <option value="completed">Завершен</option>
                     <option value="canceled">Отменен</option>
                   </select>
-                 </td>
+                </td>
                 <td class="text-muted">{{ formatDate(order.created_at) }}</td>
                 <td class="text-right">
                   <button @click="viewDetails(order)" class="btn-icon btn-view">
@@ -82,14 +81,14 @@
                     <span>Просмотр</span>
                   </button>
                 </td>
-              </table>
+              </tr>
             </tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- 🆕 Модальное окно деталей с телефоном -->
+    <!-- Модальное окно деталей -->
     <transition name="modal-fade">
       <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
         <div class="modal-container">
@@ -116,7 +115,6 @@
                 <label>Email</label>
                 <div class="info-value">{{ selectedOrder?.user?.email || '—' }}</div>
               </div>
-              <!-- 🆕 Блок телефона в модальном окне -->
               <div class="info-block">
                 <label>📞 Телефон</label>
                 <div class="info-value">
@@ -142,7 +140,6 @@
               </div>
             </div>
 
-            <!-- 🆕 Быстрые действия с телефоном -->
             <div v-if="selectedOrder?.phone" class="quick-actions">
               <a :href="`tel:${selectedOrder.phone}`" class="quick-action-btn">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -203,7 +200,9 @@ const selectedOrder = ref(null);
 const statusFilter = ref('');
 const toast = useToastStore();
 
-const filteredOrders = computed(() => statusFilter.value ? orders.value.filter(o => o.status === statusFilter.value) : orders.value);
+const filteredOrders = computed(() => {
+  return statusFilter.value ? orders.value.filter(o => o.status === statusFilter.value) : orders.value;
+});
 
 const orderPackages = computed(() => {
   if (!selectedOrder.value) return [];
@@ -212,7 +211,6 @@ const orderPackages = computed(() => {
   return [{ packaging: 'Не указана', items: selectedOrder.value.flowers?.map(f => ({ id: f.id, qty: f.pivot?.quantity })) || [] }];
 });
 
-// 🆕 Функция форматирования телефона
 const formatPhone = (phone) => {
   if (!phone) return '—';
   const cleaned = phone.replace(/\D/g, '');
@@ -222,32 +220,69 @@ const formatPhone = (phone) => {
   return phone;
 };
 
-const packagingMap = { 'none': 'Без упаковки', 'craft': 'Крафт-бумага', 'film': 'Прозрачная пленка', 'box': 'Шляпная коробка' };
+const packagingMap = { 
+  'none': 'Без упаковки', 
+  'craft': 'Крафт-бумага', 
+  'film': 'Прозрачная пленка', 
+  'box': 'Шляпная коробка' 
+};
+
 const getPackagingLabel = (v) => packagingMap[v] || v || 'Без упаковки';
 const getFlowerDetails = (id) => selectedOrder.value?.flowers?.find(f => f.id == id);
 const getFlowerName = (id) => getFlowerDetails(id)?.nazvanie || 'Товар удален';
-const getFlowerPrice = (id) => getFlowerDetails(id)?.pivot?.price_at_purchase || 0;
+const getFlowerPrice = (id) => {
+  const price = getFlowerDetails(id)?.pivot?.price_at_purchase || 0;
+  if (price > 10000) return price / 100;
+  return price;
+};
 const getFlowerImg = (id) => getFlowerDetails(id)?.flower_image_url || getFlowerDetails(id)?.image_url;
-const formatPrice = (p) => p ? new Intl.NumberFormat('ru-RU').format(p) + ' ₽' : '0 ₽';
-const formatDate = (d) => d ? new Date(d).toLocaleString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '-';
-const getStatusText = (s) => ({ pending:'Ожидает', confirmed:'Подтвержден', completed:'Завершен', canceled:'Отменен' }[s] || s);
+
+const formatPrice = (p) => {
+  if (!p && p !== 0) return '0 ₽';
+  let finalPrice = p;
+  if (p > 10000) {
+    finalPrice = p / 100;
+  }
+  return new Intl.NumberFormat('ru-RU').format(Math.round(finalPrice)) + ' ₽';
+};
+
+const formatDate = (d) => {
+  return d ? new Date(d).toLocaleString('ru-RU', { 
+    day: '2-digit', 
+    month: '2-digit', 
+    year: 'numeric', 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  }) : '-';
+};
+
+const getStatusText = (s) => {
+  const statuses = { 
+    pending: 'Ожидает', 
+    confirmed: 'Подтвержден', 
+    completed: 'Завершен', 
+    canceled: 'Отменен' 
+  };
+  return statuses[s] || s;
+};
 
 onMounted(async () => {
   try { 
     const { data } = await api.get('/admin/orders'); 
     orders.value = data;
     await new Promise(resolve => setTimeout(resolve, 500));
+  } catch (e) { 
+    toast.error('Ошибка загрузки'); 
+  } finally { 
+    loading.value = false; 
   }
-  catch (e) { toast.error('Ошибка загрузки'); }
-  finally { loading.value = false; }
 });
 
 const updateStatus = async (order) => {
   try { 
     await api.patch(`/admin/orders/${order.id}/status`, { status: order.status }); 
     toast.success('Статус обновлён'); 
-  }
-  catch (e) { 
+  } catch (e) { 
     toast.error('Ошибка обновления'); 
   }
 };
@@ -259,94 +294,7 @@ const viewDetails = (order) => {
 </script>
 
 <style scoped>
-/* Добавляем стили для телефонной колонки */
-.phone-cell {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.9rem;
-}
-
-.phone-cell svg {
-  flex-shrink: 0;
-  color: #10b981;
-}
-
-.phone-link {
-  color: #1f2937;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.phone-link:hover {
-  color: #10b981;
-  text-decoration: underline;
-}
-
-.phone-cell.empty {
-  color: #9ca3af;
-}
-
-/* 🆕 Быстрые действия в модальном окне */
-.quick-actions {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
-  padding: 16px;
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-  border-radius: 12px;
-}
-
-.quick-action-btn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  color: #1f2937;
-  text-decoration: none;
-  font-size: 0.85rem;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.quick-action-btn:hover {
-  background: #10b981;
-  border-color: #10b981;
-  color: white;
-}
-
-.quick-action-btn.whatsapp:hover {
-  background: #25D366;
-  border-color: #25D366;
-}
-
-.quick-action-btn svg {
-  width: 16px;
-  height: 16px;
-}
-
-.phone-link-large {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: #10b981;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 1.1rem;
-  transition: all 0.2s;
-}
-
-.phone-link-large:hover {
-  color: #059669;
-  text-decoration: underline;
-}
-
-/* Остальные стили из предыдущей версии */
+/* Все стили остаются как в предыдущей версии */
 .form-select { padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; font-size: 0.9rem; cursor: pointer; }
 .packages-section { margin-top: 20px; }
 .package-block { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
@@ -375,15 +323,30 @@ const viewDetails = (order) => {
 .text-muted { color: var(--text-muted); font-size: 0.9rem; }
 .text-right { text-align: right; }
 .price-tag { font-weight: 700; color: var(--primary); }
+
+.phone-cell { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; }
+.phone-cell svg { flex-shrink: 0; color: #10b981; }
+.phone-link { color: #1f2937; text-decoration: none; transition: color 0.2s; }
+.phone-link:hover { color: #10b981; text-decoration: underline; }
+.phone-cell.empty { color: #9ca3af; }
+
+.quick-actions { display: flex; gap: 12px; margin-bottom: 24px; padding: 16px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 12px; }
+.quick-action-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; background: white; border: 1px solid #e5e7eb; border-radius: 10px; color: #1f2937; text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: all 0.2s; }
+.quick-action-btn:hover { background: #10b981; border-color: #10b981; color: white; }
+.quick-action-btn.whatsapp:hover { background: #25D366; border-color: #25D366; }
+.quick-action-btn svg { width: 16px; height: 16px; }
+.phone-link-large { display: inline-flex; align-items: center; gap: 8px; color: #10b981; text-decoration: none; font-weight: 600; font-size: 1.1rem; transition: all 0.2s; }
+.phone-link-large:hover { color: #059669; text-decoration: underline; }
+
 .status-select { padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid transparent; cursor: pointer; outline: none; appearance: none; background-repeat: no-repeat; background-position: right 8px center; padding-right: 24px; transition: all 0.2s; }
 .status-pending { background-color: var(--status-pending-bg); color: var(--status-pending-text); }
 .status-confirmed { background-color: var(--status-confirmed-bg); color: var(--status-confirmed-text); }
 .status-completed { background-color: var(--status-completed-bg); color: var(--status-completed-text); }
 .status-canceled { background-color: var(--status-canceled-bg); color: var(--status-canceled-text); }
+
 .btn-icon { display: inline-flex; align-items: center; gap: 6px; background: white; border: 1px solid var(--border); color: var(--text-main); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
 .btn-icon:hover { background: var(--primary); color: white; border-color: var(--primary); }
 
-/* Лоадер */
 .state-container { padding: 60px 20px; text-align: center; color: var(--text-muted); }
 .flower-loader { position: relative; width: 80px; height: 80px; margin: 0 auto 20px; animation: rotate-flower 8s linear infinite; }
 @keyframes rotate-flower { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -401,7 +364,6 @@ const viewDetails = (order) => {
 .empty-state .icon-empty { font-size: 3rem; display: block; margin-bottom: 15px; }
 .empty-state h3 { margin: 0; font-size: 1.2rem; color: var(--text-muted); }
 
-/* Модальное окно */
 .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
 .modal-container { background: white; border-radius: 24px; width: 100%; max-width: 700px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); animation: modal-slide-up 0.3s ease-out; }
 @keyframes modal-slide-up { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -435,7 +397,6 @@ const viewDetails = (order) => {
 .modal-fade-enter-active, .modal-fade-leave-active { transition: opacity 0.3s ease; }
 .modal-fade-enter-from, .modal-fade-leave-to { opacity: 0; }
 
-/* Адаптив */
 @media (max-width: 768px) {
   .admin-page { padding: 20px 15px; }
   .admin-header { flex-direction: column; align-items: flex-start; }

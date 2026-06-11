@@ -216,8 +216,8 @@ const buildPackagesPayload = () => bouquetIds.value.map(bid => {
 
 const sendOrder = async () => {
   if (!pickupLocation.value) return error.value = 'Выберите точку самовывоза';
-  if (!phoneNumber.value || phoneNumber.value.replace(/\D/g, '').length < 11) {
-    return error.value = 'Введите корректный номер телефона';
+  // if (!phoneNumber.value || phoneNumber.value.replace(/\D/g, '').length < 11) {
+    // return error.value = 'Введите корректный номер телефона';
   }
   
   loading.value = true; 

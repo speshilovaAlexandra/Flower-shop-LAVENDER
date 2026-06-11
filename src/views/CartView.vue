@@ -163,6 +163,7 @@ import { useRouter } from 'vue-router';
 import api from '@/api';
 import { useToastStore } from '@/stores/toast';
 import { useCart } from '@/composables/useCart';
+import { getImageUrl, handleImageError } from '@/utils/image';
 
 const router = useRouter();
 const toast = useToastStore();
@@ -194,12 +195,10 @@ const changeQty = (item, delta) => { item.qty = Math.max(1, item.qty + delta); s
 const removeItem = (item) => { cart.value = cart.value.filter(i => i !== item); saveLocal(); };
 const onQtyChange = (item) => {
   let val = parseInt(item.qty);
-  // Защита от пустых/отрицательных/слишком больших значений
   if (isNaN(val) || val < 1) val = 1;
   if (val > 999) val = 999;
-  
   item.qty = val;
-  saveLocal(); // Мгновенно сохраняет в localStorage + debounce-синк с БД
+  saveLocal();
 };
 const addNewBouquetGroup = () => {
   const newId = bouquetIds.value.length > 0 ? Math.max(...bouquetIds.value) + 1 : 1;
@@ -223,8 +222,7 @@ const buildPackagesPayload = () => bouquetIds.value.map(bid => {
   if (items.length === 0) return null;
   return {
     packaging: selectedPackaging.value[bid] || 'none',
-    packaging_price: getPackagingPrice(bid), // 🆕 Передаем стоимость упаковки для этой сборки
-    items: items.map(item => ({ id: item.id, qty: item.qty, price: item.price }))
+    items: items.map(item => ({ id: item.id, qty: item.qty }))
   };
 }).filter(Boolean);
 
@@ -277,18 +275,8 @@ const applyReplacement = (originalId, newId, mode) => {
 };
 
 onMounted(() => {
-  loadFromServer(); // ✅ Загрузка из сервера или localStorage
+  loadFromServer();
 });
-// onMounted(() => {
-//   // ✅ Состояние уже загружено в App.vue и шарится через useCart().
-//   // Повторный вызов loadFromServer() вызывал race condition и перезаписывал корзину.
-  
-//   // Миграционная страховка: если пользователь старый и нет bouquet_ids
-//   if (bouquetIds.value.length === 0 && cart.value.length > 0) {
-//     bouquetIds.value = [1];
-//     saveLocal();
-//   }
-// });
 </script>
 <style scoped>
 .qty-input {

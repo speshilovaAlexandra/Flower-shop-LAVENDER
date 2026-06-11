@@ -107,23 +107,24 @@
       </div>
     </div>
 
-    <!-- 🆕 КРАСИВОЕ МОДАЛЬНОЕ ОКНО ЗАМЕНЫ -->
+    <!-- 🌸 КРАСИВОЕ МОДАЛЬНОЕ ОКНО В СТИЛЕ LAVENDER -->
     <transition name="modal-fade">
       <div v-if="showReplacementModal" class="modal-overlay" @click.self="showReplacementModal = false">
         <div class="replacement-modal">
+          <div class="modal-decoration"></div>
+          
           <div class="modal-header">
-            <div class="modal-header-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="modal-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
+                <path d="M12 8v4M12 16h.01"/>
               </svg>
             </div>
-            <div class="modal-header-text">
-              <h3>Внимание!</h3>
-              <p>Некоторые товары отсутствуют в нужном количестве</p>
+            <div class="header-text">
+              <h3>Требуется внимание</h3>
+              <p>Некоторые позиции отсутствуют в нужном количестве</p>
             </div>
-            <button @click="showReplacementModal = false" class="btn-close-modal">
+            <button @click="showReplacementModal = false" class="close-modal">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"/>
                 <line x1="6" y1="6" x2="18" y2="18"/>
@@ -132,55 +133,63 @@
           </div>
 
           <div class="modal-body">
-            <div v-for="(s, idx) in shortages" :key="s.flower_id" class="shortage-card">
-              <div class="shortage-card-header">
-                <div class="shortage-number">{{ idx + 1 }}</div>
-                <div class="shortage-stock">
-                  <span class="stock-label">В наличии:</span>
-                  <span class="stock-value" :class="{ 'low-stock': s.available < 5 }">{{ s.available }} шт.</span>
-                </div>
-              </div>
-
-              <div class="shortage-product">
-                <img :src="s.image || '/images/placeholder.jpg'" class="product-image-modal" alt="">
-                <div class="product-info-modal">
-                  <h4>{{ s.name }}</h4>
-                  <div class="product-quantity">
-                    <span class="requested">Запрошено: {{ s.requested }} шт.</span>
-                    <span class="missing">Не хватает: {{ s.missing }} шт.</span>
+            <div v-for="(s, idx) in shortages" :key="s.flower_id" class="shortage-item">
+              <div class="shortage-badge">{{ idx + 1 }}</div>
+              
+              <div class="shortage-content">
+                <div class="product-row">
+                  <div class="product-image">
+                    <img :src="s.image || '/images/placeholder.jpg'" :alt="s.name">
+                  </div>
+                  <div class="product-details">
+                    <h4>{{ s.name }}</h4>
+                    <div class="stock-info">
+                      <span class="stock-label">В наличии:</span>
+                      <span class="stock-value" :class="{ 'stock-low': s.available < 5 }">{{ s.available }} шт.</span>
+                      <span class="requested-label">Запрошено:</span>
+                      <span class="requested-value">{{ s.requested }} шт.</span>
+                    </div>
+                    <div class="missing-badge">
+                      <span>Не хватает {{ s.missing }} шт.</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div class="replacement-section">
-                <p class="replacement-title">✨ Выберите вариант замены</p>
-                <div class="replacement-options-grid">
+                <div class="replacement-title">
+                  <span class="title-icon">✨</span>
+                  <span>Выберите вариант замены</span>
+                </div>
+
+                <div class="replacement-grid">
                   <button v-for="opt in s.suggestions" :key="opt.id"
                           @click="applyReplacement(s.flower_id, opt.id, 'replace')"
-                          class="replacement-option replace-option">
-                    <span class="option-icon">🔄</span>
-                    <div class="option-details">
-                      <span class="option-name">{{ opt.nazvanie }}</span>
-                      <span class="option-price">{{ formatPrice(opt.price) }}</span>
+                          class="replacement-card replace-card">
+                    <span class="card-icon">🔄</span>
+                    <div class="card-info">
+                      <span class="card-name">{{ opt.nazvanie }}</span>
+                      <span class="card-price">{{ formatPrice(opt.price) }}</span>
                     </div>
+                    <span class="card-arrow">→</span>
                   </button>
                   
                   <button @click="applyReplacement(s.flower_id, null, 'reduce')"
-                          class="replacement-option reduce-option">
-                    <span class="option-icon">📉</span>
-                    <div class="option-details">
-                      <span class="option-name">Оставить {{ s.available }} шт.</span>
-                      <span class="option-hint">уменьшить количество</span>
+                          class="replacement-card reduce-card">
+                    <span class="card-icon">📉</span>
+                    <div class="card-info">
+                      <span class="card-name">Уменьшить количество</span>
+                      <span class="card-hint">до {{ s.available }} шт.</span>
                     </div>
+                    <span class="card-arrow">→</span>
                   </button>
                   
                   <button @click="applyReplacement(s.flower_id, null, 'remove')"
-                          class="replacement-option remove-option">
-                    <span class="option-icon">🗑</span>
-                    <div class="option-details">
-                      <span class="option-name">Убрать из заказа</span>
-                      <span class="option-hint">полностью удалить</span>
+                          class="replacement-card remove-card">
+                    <span class="card-icon">🗑</span>
+                    <div class="card-info">
+                      <span class="card-name">Удалить из заказа</span>
+                      <span class="card-hint">полностью</span>
                     </div>
+                    <span class="card-arrow">→</span>
                   </button>
                 </div>
               </div>
@@ -188,7 +197,12 @@
           </div>
 
           <div class="modal-footer">
-            <button @click="showReplacementModal = false" class="btn-cancel">Продолжить оформление</button>
+            <button @click="showReplacementModal = false" class="btn-continue">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span>Продолжить оформление</span>
+            </button>
           </div>
         </div>
       </div>
@@ -355,7 +369,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ===== ОСНОВНЫЕ СТИЛИ ===== */
+/* ===== ОСНОВНЫЕ СТИЛИ КОРЗИНЫ ===== */
 .qty-input {
   width: 50px;
   text-align: center;
@@ -383,6 +397,7 @@ onMounted(() => {
 :root {
   --primary: #481C69;
   --primary-light: #f3f0f7;
+  --primary-dark: #361550;
   --accent: #D0C4C8;
   --bg-light: #f9f9f9;
   --text-main: #1f2937;
@@ -472,7 +487,6 @@ onMounted(() => {
   background: transparent;
   cursor: pointer;
 }
-.qty-value { width: 40px; text-align: center; font-weight: 600; }
 .item-total { font-weight: 700; font-size: 1.1rem; min-width: 80px; text-align: right; }
 .btn-remove { background: none; border: none; cursor: pointer; color: #ccc; font-size: 1.2rem; }
 .btn-remove:hover { color: var(--danger); }
@@ -535,7 +549,7 @@ onMounted(() => {
   margin-top: 15px;
 }
 
-/* ===== КРАСИВОЕ МОДАЛЬНОЕ ОКНО ===== */
+/* ===== 🌸 КРАСИВОЕ МОДАЛЬНОЕ ОКНО LAVENDER ===== */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -552,25 +566,37 @@ onMounted(() => {
 }
 
 .replacement-modal {
+  position: relative;
   background: white;
-  border-radius: 28px;
+  border-radius: 32px;
   width: 100%;
   max-width: 680px;
   max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  animation: modalSlideUp 0.35s cubic-bezier(0.21, 1.11, 0.35, 1);
+  box-shadow: 0 25px 50px -12px rgba(72, 28, 105, 0.3);
+  animation: modalSlideIn 0.4s cubic-bezier(0.21, 1.11, 0.35, 1);
 }
 
-@keyframes modalSlideUp {
+@keyframes modalSlideIn {
   from {
-    transform: translateY(30px);
+    transform: translateY(30px) scale(0.96);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
+}
+
+/* Декоративная полоска сверху */
+.modal-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), #9b59b6, var(--primary));
+  border-radius: 32px 32px 0 0;
 }
 
 /* Хедер модалки */
@@ -578,282 +604,309 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 24px 28px;
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  border-radius: 28px 28px 0 0;
-  position: relative;
+  padding: 28px 28px 20px 28px;
+  border-bottom: 2px solid var(--primary-light);
 }
 
-.modal-header-icon {
-  width: 52px;
-  height: 52px;
-  background: #f59e0b;
-  border-radius: 50%;
+.modal-icon {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, var(--primary), #7c3aed);
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+  box-shadow: 0 8px 20px rgba(72, 28, 105, 0.3);
 }
 
-.modal-header-text {
+.header-text {
   flex: 1;
 }
 
-.modal-header-text h3 {
+.header-text h3 {
   margin: 0 0 4px;
   font-size: 1.3rem;
   font-weight: 700;
-  color: #92400e;
+  color: var(--text-main);
 }
 
-.modal-header-text p {
+.header-text p {
   margin: 0;
   font-size: 0.85rem;
-  color: #b45309;
+  color: var(--text-muted);
 }
 
-.btn-close-modal {
-  background: rgba(0, 0, 0, 0.08);
-  border: none;
+.close-modal {
   width: 36px;
   height: 36px;
+  background: var(--primary-light);
+  border: none;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.25s;
-  color: #92400e;
+  color: var(--primary);
 }
 
-.btn-close-modal:hover {
-  background: rgba(0, 0, 0, 0.15);
+.close-modal:hover {
+  background: var(--primary);
+  color: white;
   transform: rotate(90deg);
 }
 
 /* Тело модалки */
 .modal-body {
-  padding: 24px 28px;
+  padding: 20px 28px;
+  max-height: 55vh;
+  overflow-y: auto;
 }
 
-/* Карточка товара с недостачей */
-.shortage-card {
-  background: #f9fafb;
-  border-radius: 20px;
-  margin-bottom: 24px;
-  overflow: hidden;
-  border: 1px solid #e5e7eb;
-  transition: all 0.2s;
-}
-
-.shortage-card:hover {
-  border-color: #fde68a;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.shortage-card-header {
+/* Каждый товар с недостачей */
+.shortage-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
+  gap: 16px;
   background: white;
-  border-bottom: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  transition: all 0.25s;
 }
 
-.shortage-number {
-  width: 28px;
-  height: 28px;
-  background: var(--primary);
+.shortage-item:hover {
+  border-color: var(--primary-light);
+  box-shadow: 0 4px 12px rgba(72, 28, 105, 0.1);
+}
+
+.shortage-badge {
+  width: 36px;
+  background: linear-gradient(135deg, var(--primary), #7c3aed);
   color: white;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
   font-weight: 700;
+  font-size: 1.1rem;
 }
 
-.shortage-stock {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.stock-label {
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-.stock-value {
-  font-weight: 700;
-  font-size: 0.85rem;
-  color: #10b981;
-}
-
-.stock-value.low-stock {
-  color: #ef4444;
+.shortage-content {
+  flex: 1;
+  padding: 16px 16px 16px 0;
 }
 
 /* Информация о товаре */
-.shortage-product {
+.product-row {
   display: flex;
   gap: 16px;
-  padding: 16px;
-  background: white;
-  border-bottom: 1px solid #f3f4f6;
+  margin-bottom: 16px;
 }
 
-.product-image-modal {
-  width: 64px;
-  height: 64px;
+.product-image {
+  width: 70px;
+  height: 70px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--primary-light);
+  flex-shrink: 0;
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 12px;
-  background: #f3f4f6;
 }
 
-.product-info-modal {
+.product-details {
   flex: 1;
 }
 
-.product-info-modal h4 {
+.product-details h4 {
   margin: 0 0 8px;
   font-size: 1rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--text-main);
 }
 
-.product-quantity {
+.stock-info {
   display: flex;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
   font-size: 0.8rem;
+  margin-bottom: 8px;
 }
 
-.requested {
-  color: #6b7280;
+.stock-label {
+  color: var(--text-muted);
 }
 
-.missing {
-  color: #ef4444;
+.stock-value {
   font-weight: 600;
+  color: var(--success);
 }
 
-/* Секция замены */
-.replacement-section {
-  padding: 16px;
+.stock-value.stock-low {
+  color: var(--danger);
 }
 
+.requested-label {
+  color: var(--text-muted);
+}
+
+.requested-value {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.missing-badge {
+  display: inline-flex;
+  background: #fee2e2;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+/* Заголовок замены */
 .replacement-title {
-  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 12px;
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
-.replacement-options-grid {
+.title-icon {
+  font-size: 1rem;
+}
+
+/* Сетка вариантов замены */
+.replacement-grid {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.replacement-option {
+.replacement-card {
   display: flex;
   align-items: center;
   gap: 14px;
   padding: 12px 16px;
-  border-radius: 14px;
-  border: 1px solid #e5e7eb;
   background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s;
+  width: 100%;
   text-align: left;
 }
 
-.replacement-option:hover {
+.replacement-card:hover {
   transform: translateX(6px);
 }
 
-.option-icon {
+.card-icon {
   font-size: 1.2rem;
   flex-shrink: 0;
 }
 
-.option-details {
+.card-info {
   flex: 1;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
-.option-name {
+.card-name {
   font-weight: 600;
   font-size: 0.9rem;
-  color: #1f2937;
+  color: var(--text-main);
 }
 
-.option-price {
+.card-price {
   font-weight: 700;
   font-size: 0.85rem;
   color: var(--primary);
 }
 
-.option-hint {
+.card-hint {
   font-size: 0.7rem;
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
-.replace-option:hover {
-  background: #f3f0f7;
+.card-arrow {
+  color: var(--primary);
+  font-size: 1.1rem;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.replacement-card:hover .card-arrow {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+/* Стили для разных типов карточек */
+.replace-card:hover {
+  background: var(--primary-light);
   border-color: var(--primary);
 }
 
-.reduce-option:hover {
+.reduce-card:hover {
   background: #fef3c7;
   border-color: #f59e0b;
 }
 
-.reduce-option:hover .option-name {
+.reduce-card:hover .card-name {
   color: #d97706;
 }
 
-.remove-option:hover {
+.remove-card:hover {
   background: #fee2e2;
-  border-color: #ef4444;
+  border-color: var(--danger);
 }
 
-.remove-option:hover .option-name {
-  color: #dc2626;
+.remove-card:hover .card-name {
+  color: var(--danger);
 }
 
 /* Футер модалки */
 .modal-footer {
   padding: 20px 28px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border);
+  background: var(--bg-light);
+  border-radius: 0 0 32px 32px;
+}
+
+.btn-continue {
   display: flex;
-  justify-content: flex-end;
-  background: #f9fafb;
-  border-radius: 0 0 28px 28px;
-}
-
-.btn-cancel {
-  padding: 10px 28px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--primary), #7c3aed);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 0.95rem;
   cursor: pointer;
-  font-weight: 500;
-  font-size: 0.9rem;
-  transition: all 0.2s;
-  color: #4b5563;
+  transition: all 0.25s;
 }
 
-.btn-cancel:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
+.btn-continue:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(72, 28, 105, 0.3);
 }
 
 /* Анимация появления */
@@ -876,46 +929,66 @@ onMounted(() => {
 @media (max-width: 640px) {
   .replacement-modal {
     max-width: 95%;
-    border-radius: 20px;
+    border-radius: 24px;
   }
   
   .modal-header {
-    padding: 18px 20px;
+    padding: 20px 20px 16px;
     flex-wrap: wrap;
   }
   
-  .modal-header-icon {
-    width: 44px;
-    height: 44px;
+  .modal-icon {
+    width: 48px;
+    height: 48px;
   }
   
-  .modal-header-text h3 {
+  .modal-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .header-text h3 {
     font-size: 1.1rem;
   }
   
-  .modal-header-text p {
+  .header-text p {
     font-size: 0.75rem;
   }
   
   .modal-body {
-    padding: 20px;
+    padding: 16px 20px;
   }
   
-  .shortage-product {
+  .shortage-item {
+    flex-direction: column;
+  }
+  
+  .shortage-badge {
+    width: 100%;
+    height: 28px;
+    font-size: 0.9rem;
+  }
+  
+  .shortage-content {
+    padding: 16px;
+  }
+  
+  .product-row {
     flex-direction: column;
     align-items: center;
     text-align: center;
   }
   
-  .product-info-modal h4 {
-    text-align: center;
+  .product-image {
+    width: 80px;
+    height: 80px;
   }
   
-  .product-quantity {
+  .stock-info {
     justify-content: center;
   }
   
-  .option-details {
+  .card-info {
     flex-direction: column;
     align-items: flex-start;
   }
@@ -923,18 +996,40 @@ onMounted(() => {
   .modal-footer {
     padding: 16px 20px;
   }
+  
+  .btn-continue {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
 }
 
 @media (max-width: 480px) {
-  .replacement-option {
+  .cart-page {
+    padding: 30px 15px;
+  }
+  
+  .page-title {
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+  }
+  
+  .bouquet-title {
+    font-size: 1.1rem;
+  }
+  
+  .replacement-grid {
+    gap: 8px;
+  }
+  
+  .replacement-card {
     padding: 10px 14px;
   }
   
-  .option-name {
+  .card-name {
     font-size: 0.85rem;
   }
   
-  .option-price {
+  .card-price {
     font-size: 0.8rem;
   }
 }

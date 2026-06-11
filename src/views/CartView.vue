@@ -278,6 +278,7 @@ onMounted(() => {
   loadFromServer();
 });
 </script>
+
 <style scoped>
 .qty-input {
   width: 50px;

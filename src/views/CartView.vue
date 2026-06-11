@@ -85,9 +85,8 @@
             <select v-model="pickupLocation" class="form-select">
               <option disabled value="">Выберите магазин</option>
               <option v-for="p in pickupPoints" :key="p" :value="p">{{ p }}</option>
-            </select>
-          </div>
-          <div class="phone-section">
+            </select> 
+            <div class="phone-section">
             <label for="phone">📞 Номер телефона</label>
             <input 
               id="phone"
@@ -99,6 +98,8 @@
             />
             <p class="phone-hint">Если у нас будут вопросы, мы свяжемся с вами по этому номеру</p>
           </div>
+          </div>
+         
           <div class="checkout-area">
             <button class="btn-checkout" @click="sendOrder" :disabled="loading || !pickupLocation">
               <span v-if="loading">Обработка...</span>

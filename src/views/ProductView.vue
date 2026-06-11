@@ -118,18 +118,19 @@ const incrementQty = () => qty.value++
 const decrementQty = () => { if (qty.value > 1) qty.value-- }
 
 // 🛒 ИСПРАВЛЕННОЕ ДОБАВЛЕНИЕ В КОРЗИНУ
+// ProductView.vue - исправленная функция addToCart
 const addToCart = () => {
+  // ✅ Проверка авторизации
   if (!isAuthenticated()) {
-    toast.warning('Войдите в аккаунт, чтобы оформить заказ')
-    return router.push('/login')
+    toast.warning('Войдите в аккаунт, чтобы добавить товар в корзину');
+    router.push('/login');
+    return;
   }
-  if (!flower.value) return
+  
+  if (!flower.value) return;
 
-  // Берём ID активной сборки
   const activeId = bouquetIds.value.length > 0 ? bouquetIds.value[bouquetIds.value.length - 1] : 1
 
-  // 🔥 Создаём "чистый" объект без лишних полей API (pivot, relations, getters), 
-  // которые ломают JSON.stringify и localStorage
   const cleanItem = {
     id: flower.value.id,
     nazvanie: flower.value.nazvanie,
@@ -148,11 +149,9 @@ const addToCart = () => {
     cart.value.push(cleanItem)
   }
 
-  // ✅ Мгновенно пишем в localStorage + запускаем debounce-синхронизацию с сервером
   saveLocal()
-  
   toast.success(`"${cleanItem.nazvanie}" добавлен в корзину (${qty.value} шт.)`)
-  router.push('/cart') // ✅ Плавный SPA-переход без перезагрузки
+  router.push('/cart')
 }
 
 onMounted(async () => {

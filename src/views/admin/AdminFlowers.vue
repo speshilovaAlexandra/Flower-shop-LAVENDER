@@ -272,12 +272,30 @@ import { useToastStore } from '@/stores/toast';
 import { getImageUrl, handleImageError } from '@/utils/image';
 import ConfirmModal from '@/components/ConfirmModal.vue';
 
-
+// ===== ОБЪЯВЛЕНИЕ ВСЕХ ПЕРЕМЕННЫХ =====
+const showModal = ref(false);  // 🔥 ВАЖНО: добавляем эту переменную
 const selectedCsv = ref(null);
 const uploading = ref(false);
 const importResult = ref(null);
 const isDragOver = ref(false);
+const flowers = ref([]);
+const editingId = ref(null);
+const saving = ref(false);
+const currentFlowerImg = ref(null);
+const confirmModal = ref(null);
+const csvInput = ref(null);
+const toast = useToastStore();
 
+const form = ref({ 
+  nazvanie: '', 
+  price: '', 
+  quantity: 0, 
+  opisanie: '', 
+  img: null,
+  flower_img: null
+});
+
+// ===== ФУНКЦИИ =====
 const handleCsvSelect = (e) => {
   selectedCsv.value = e.target.files[0];
   importResult.value = null;
@@ -326,24 +344,6 @@ const uploadCsv = async () => {
     uploading.value = false;
   }
 };
-
-const flowers = ref([]);
-
-const editingId = ref(null);
-const saving = ref(false);
-const currentFlowerImg = ref(null);
-const confirmModal = ref(null);
-const form = ref({ 
-  nazvanie: '', 
-  price: '', 
-  quantity: 0, 
-  opisanie: '', 
-  img: null,
-  flower_img: null
-});
-
-const toast = useToastStore();
-const csvInput = ref(null);
 
 const load = async () => { 
   try {
@@ -431,7 +431,7 @@ const openNew = () => {
 
 const openEdit = (flower) => {
   editingId.value = flower.id;
-  currentFlowerImg.value = flower.flower_image_url; // 🆕 Запоминаем текущее фото цветка
+  currentFlowerImg.value = flower.flower_image_url;
   form.value = { 
     nazvanie: flower.nazvanie, 
     price: flower.price, 

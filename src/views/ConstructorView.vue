@@ -114,30 +114,38 @@ import api from '@/api';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
+import { getImageUrl, handleImageError } from '@/utils/image';
+import { useCart } from '@/composables/useCart';
 
 const router = useRouter();
 const authStore = useAuthStore();
 const toast = useToastStore();
+const { cart, bouquetIds, selectedPackaging, saveLocal, isAuthenticated } = useCart();
 
 const mode = ref('manual');
 const flowers = ref([]);
 
 // Состояние ручного сбора
 const manualItems = ref([]);
-const manualTotal = computed(() => manualItems.value.reduce((sum, i) => sum + (i.price_per_stem * i.qty), 0));
+const manualTotal = computed(() => {
+  return manualItems.value.reduce((sum, i) => sum + (i.price_per_stem * i.qty), 0);
+});
 
 // Состояние автоподбора
 const budgetInput = ref(null);
 const autoItems = ref([]);
-const autoTotal = computed(() => autoItems.value.reduce((sum, i) => sum + (i.price_per_stem * i.qty), 0));
+const autoTotal = computed(() => {
+  return autoItems.value.reduce((sum, i) => sum + (i.price_per_stem * i.qty), 0);
+});
 const loading = ref(false);
 
 // Управление количеством
 const changeQty = (type, index, delta) => {
   const list = type === 'manual' ? manualItems.value : autoItems.value;
   if (!list[index]) return;
-  if (list[index].qty + delta < 1) return;
-  list[index].qty += delta;
+  const newQty = list[index].qty + delta;
+  if (newQty < 1) return;
+  list[index].qty = newQty;
 };
 
 const removeItem = (type, index) => {
@@ -147,8 +155,15 @@ const removeItem = (type, index) => {
 
 const addToBouquet = (flower) => {
   const existing = manualItems.value.find(item => item.id === flower.id);
-  if (existing) existing.qty++;
-  else manualItems.value.push({ ...flower, qty: 1 });
+
+  if (existing) {
+    existing.qty++;
+  } else {
+    manualItems.value.push({ 
+      ...flower, 
+      qty: 1
+    });
+  }
   toast.success(`${flower.nazvanie} добавлен в букет`);
 };
 
@@ -161,7 +176,14 @@ const generateAutoBouquet = async () => {
   autoItems.value = [];
   try {
     const { data } = await api.post('/constructor/suggest', { budget: Number(budgetInput.value) });
-    autoItems.value = data.bouquet || [];
+    const bouquet = data.bouquet || [];
+    
+    // 🆕 Гарантируем наличие price_per_stem и для автоподбора
+    autoItems.value = bouquet.map(item => ({
+      ...item,
+      price_per_stem: item.price_per_stem || Math.round(item.price / (item.stems || item.flowers_count || 1))
+    }));
+    
     toast.success(`Подобрано на ${data.total_price} ₽`);
   } catch (e) {
     console.error('Auto suggest error:', e);
@@ -171,59 +193,82 @@ const generateAutoBouquet = async () => {
   }
 };
 
-// 🆕 ДИНАМИЧЕСКАЯ ЛОГИКА ID И КОРЗИНЫ
-const getBouquetIds = () => JSON.parse(localStorage.getItem('cart_bouquet_ids') || '[]');
-const getNextBouquetId = () => {
-  const ids = getBouquetIds();
-  return ids.length > 0 ? Math.max(...ids) + 1 : 1;
-};
-
-import { useCart } from '@/composables/useCart';
-// ... внутри setup ...
-const { cart, bouquetIds, selectedPackaging, saveLocal, isAuthenticated } = useCart();
-
 const saveToCart = (items, sourceType) => {
-  if (!isAuthenticated.value) return router.push('/login');
-  if (items.length === 0) return toast.warning('Букет пуст');
+  if (!isAuthenticated.value) {
+    toast.warning('Войдите в аккаунт, чтобы добавить в корзину');
+    router.push('/login');
+    return;
+  }
+
+  if (items.length === 0) {
+    toast.warning('Букет пуст');
+    return;
+  }
 
   const newId = bouquetIds.value.length > 0 ? Math.max(...bouquetIds.value) + 1 : 1;
   bouquetIds.value.push(newId);
   selectedPackaging.value[newId] = 'none';
 
+  // ✅ В корзину сохраняем цену за 1 стебель, чтобы в CartView корректно работало умножение на qty
   const mapped = items.map(item => ({
-    id: item.id, nazvanie: item.nazvanie,
-    price: item.price_per_stem, qty: item.qty,
-    type: 'constructor', source: sourceType, bouquet_id: newId
+    id: item.id,
+    nazvanie: item.nazvanie,
+    price: item.price_per_stem, // Цена за 1 стебель (для корректного расчета в корзине)
+    original_bouquet_price: item.price, // Полная цена букета из каталога (для информации/админки)
+    qty: item.qty,
+    image: item.flower_image_url || item.image_url || item.img,
+    type: 'constructor',
+    source: sourceType,
+    bouquet_id: newId
   }));
 
   mapped.forEach(newItem => {
     const existing = cart.value.find(i => i.id === newItem.id && i.bouquet_id === newItem.bouquet_id);
-    if (existing) existing.qty += newItem.qty;
-    else cart.value.push(newItem);
+    if (existing) {
+      existing.qty += newItem.qty;
+    } else {
+      cart.value.push(newItem);
+    }
   });
 
   saveLocal();
-  toast.success(`${sourceType === 'constructor_manual' ? 'Ручной' : 'Авто'} букет добавлен в Сборку №${newId}`);
 
-  if (sourceType === 'constructor_manual') manualItems.value = [];
-  else autoItems.value = [];
+  const totalStems = mapped.reduce((sum, i) => sum + i.qty, 0);
+  toast.success(`${sourceType === 'constructor_manual' ? 'Ручной' : 'Авто'} букет: ${totalStems} стеблей добавлены в Сборку №${newId}`);
+
+  // Очищаем текущий букет после добавления в корзину
+  if (sourceType === 'constructor_manual') {
+    manualItems.value = [];
+  } else {
+    autoItems.value = [];
+  }
 };
+
 const orderManualBouquet = () => saveToCart(manualItems.value, 'constructor_manual');
 const orderAutoBouquet = () => saveToCart(autoItems.value, 'constructor_auto');
 
-const formatPrice = (price) => new Intl.NumberFormat('ru-RU').format(price) + ' ₽';
+const formatPrice = (price) => {
+  if (!price && price !== 0) return '0 ₽';
+  return new Intl.NumberFormat('ru-RU').format(Math.round(price)) + ' ₽';
+};
 
 onMounted(async () => {
   try {
     const { data } = await api.get('/constructor/flowers');
-    flowers.value = data;
+    
+    // 🆕 Гарантируем расчет цены за стебель при загрузке каталога конструктора. 
+    // Если бэкенд не отдает price_per_stem, вычисляем его: цена букета / кол-во стеблей.
+    flowers.value = data.map(f => ({
+      ...f,
+      price_per_stem: f.price_per_stem || Math.round(f.price / (f.stems || f.flowers_count || 1))
+    }));
+    
   } catch (e) {
     console.error('Ошибка загрузки цветов', e);
     toast.error('Не удалось загрузить цветы для конструктора');
   }
 });
 </script>
-
 <style scoped>
 /* Все стили остаются теми же, добавляем только подсказку */
 .hint-text {

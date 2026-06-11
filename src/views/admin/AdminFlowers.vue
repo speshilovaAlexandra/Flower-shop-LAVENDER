@@ -276,7 +276,8 @@ import { ref, onMounted } from 'vue';
 import api from '@/api';
 import { useToastStore } from '@/stores/toast';
 import { getImageUrl, handleImageError } from '@/utils/image';
-
+import { useModalStore } from '@/stores/modal';
+  
 const selectedCsv = ref(null);
 const uploading = ref(false);
 const importResult = ref(null);
@@ -448,14 +449,23 @@ const openEdit = (flower) => {
 };
 
 const deleteItem = async (id) => {
-  if (confirm('Вы уверены, что хотите удалить этот товар?')) {
-    try {
-      await api.delete(`/admin/flowers/${id}`);
-      toast.success('Товар удалён');
-      load();
-    } catch (e) {
-      toast.error('Ошибка при удалении');
-    }
+  // Используем кастомное подтверждение через Toast с кнопками
+  const confirmed = await toast.confirm({
+    title: 'Удаление товара',
+    message: 'Вы уверены, что хотите удалить этот товар?',
+    confirmText: 'Да, удалить',
+    cancelText: 'Отмена',
+    type: 'danger'
+  });
+  
+  if (!confirmed) return;
+  
+  try {
+    await api.delete(`/admin/flowers/${id}`);
+    toast.success('Товар успешно удалён');
+    load();
+  } catch (e) {
+    toast.error('Ошибка при удалении товара');
   }
 };
 

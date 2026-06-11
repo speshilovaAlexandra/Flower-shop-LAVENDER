@@ -269,7 +269,35 @@
       </div>
     </transition>
   </div>
+  <template>
+  <ConfirmModal ref="confirmModal" />
+</template>
+
+<script setup>
+import ConfirmModal from '@/components/ConfirmModal.vue';
+
+const confirmModal = ref(null);
+
+const deleteItem = async (id) => {
+  const confirmed = await confirmModal.value.show({
+    title: 'Удаление товара',
+    message: 'Вы уверены, что хотите удалить этот товар? Это действие нельзя отменить.',
+    confirmText: 'Да, удалить',
+    cancelText: 'Отмена',
+    type: 'danger'
+  });
   
+  if (!confirmed) return;
+  
+  try {
+    await api.delete(`/admin/flowers/${id}`);
+    toast.success('Товар успешно удалён');
+    load();
+  } catch (e) {
+    toast.error('Ошибка при удалении товара');
+  }
+};
+</script>
 </template>
 
 <script setup>

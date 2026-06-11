@@ -344,7 +344,7 @@ const applyReplacement = (originalId, newId, mode) => {
       item.id = suggestion.id;
       item.nazvanie = suggestion.nazvanie;
       item.price = suggestion.price;
-      item.image = suggestion.image_url || suggestion.img;
+      //item.image = suggestion.image_url || suggestion.img;
       toast.success(`Заменено на ${suggestion.nazvanie}`);
     }
   } else if (mode === 'reduce') {

@@ -78,14 +78,7 @@
             <span>{{ uploading ? 'Загрузка...' : 'Загрузить файл' }}</span>
           </button>
           
-          <a href="/sample-import.csv" download class="btn-sample">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="8 17 12 21 16 17"/>
-              <line x1="12" y1="12" x2="12" y2="21"/>
-              <path d="M20.88 18.09A9 9 0 0 0 12 3a9 9 0 0 0-8.88 7.09"/>
-            </svg>
-            Скачать пример
-          </a>
+
         </div>
 
         <!-- 🆕 КРАСИВЫЙ РЕЗУЛЬТАТ ИМПОРТА -->

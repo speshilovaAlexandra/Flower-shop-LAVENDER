@@ -155,7 +155,7 @@ const removeItem = (type, index) => {
 
 const addToBouquet = (flower) => {
   const existing = manualItems.value.find(item => item.id === flower.id);
-  
+
   if (existing) {
     existing.qty++;
   } else {
@@ -176,7 +176,14 @@ const generateAutoBouquet = async () => {
   autoItems.value = [];
   try {
     const { data } = await api.post('/constructor/suggest', { budget: Number(budgetInput.value) });
-    autoItems.value = data.bouquet || [];
+    const bouquet = data.bouquet || [];
+    
+    // 🆕 Гарантируем наличие price_per_stem и для автоподбора
+    autoItems.value = bouquet.map(item => ({
+      ...item,
+      price_per_stem: item.price_per_stem || Math.round(item.price / (item.stems || item.flowers_count || 1))
+    }));
+    
     toast.success(`Подобрано на ${data.total_price} ₽`);
   } catch (e) {
     console.error('Auto suggest error:', e);
@@ -192,7 +199,7 @@ const saveToCart = (items, sourceType) => {
     router.push('/login');
     return;
   }
-  
+
   if (items.length === 0) {
     toast.warning('Букет пуст');
     return;
@@ -202,14 +209,14 @@ const saveToCart = (items, sourceType) => {
   bouquetIds.value.push(newId);
   selectedPackaging.value[newId] = 'none';
 
-  // ✅ В корзину сохраняем цену за стебель (как есть)
+  // ✅ В корзину сохраняем цену за 1 стебель, чтобы в CartView корректно работало умножение на qty
   const mapped = items.map(item => ({
     id: item.id,
     nazvanie: item.nazvanie,
-    price: item.price_per_stem, // цена за 1 стебель
-    original_bouquet_price: item.original_price, // для информации
+    price: item.price_per_stem, // Цена за 1 стебель (для корректного расчета в корзине)
+    original_bouquet_price: item.price, // Полная цена букета из каталога (для информации/админки)
     qty: item.qty,
-    image: item.img || item.image_url,
+    image: item.flower_image_url || item.image_url || item.img,
     type: 'constructor',
     source: sourceType,
     bouquet_id: newId
@@ -225,11 +232,11 @@ const saveToCart = (items, sourceType) => {
   });
 
   saveLocal();
-  
+
   const totalStems = mapped.reduce((sum, i) => sum + i.qty, 0);
   toast.success(`${sourceType === 'constructor_manual' ? 'Ручной' : 'Авто'} букет: ${totalStems} стеблей добавлены в Сборку №${newId}`);
 
-  // Очищаем текущий букет
+  // Очищаем текущий букет после добавления в корзину
   if (sourceType === 'constructor_manual') {
     manualItems.value = [];
   } else {
@@ -248,7 +255,14 @@ const formatPrice = (price) => {
 onMounted(async () => {
   try {
     const { data } = await api.get('/constructor/flowers');
-    flowers.value = data;
+    
+    // 🆕 Гарантируем расчет цены за стебель при загрузке каталога конструктора. 
+    // Если бэкенд не отдает price_per_stem, вычисляем его: цена букета / кол-во стеблей.
+    flowers.value = data.map(f => ({
+      ...f,
+      price_per_stem: f.price_per_stem || Math.round(f.price / (f.stems || f.flowers_count || 1))
+    }));
+    
   } catch (e) {
     console.error('Ошибка загрузки цветов', e);
     toast.error('Не удалось загрузить цветы для конструктора');

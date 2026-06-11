@@ -216,41 +216,28 @@ const buildPackagesPayload = () => bouquetIds.value.map(bid => {
 
 const sendOrder = async () => {
   if (!pickupLocation.value) return error.value = 'Выберите точку самовывоза';
-  // if (!phoneNumber.value || phoneNumber.value.replace(/\D/g, '').length < 11) {
-    // return error.value = 'Введите корректный номер телефона';
-  }
-  
-  loading.value = true; 
-  error.value = '';
-  
+  loading.value = true; error.value = '';
   try {
     await api.post('/cart/validate', { packages: buildPackagesPayload() });
+    await api.post('/orders', { pickup_location: pickupLocation.value, packages: buildPackagesPayload() });
     
-    // ✅ Добавляем флаг is_constructor для каждого пакета
-    const packagesWithFlag = buildPackagesPayload().map(pkg => ({
-      ...pkg,
-      is_constructor: true // 🔥 Флаг, что это заказ из конструктора
-    }));
-    
-    await api.post('/orders', { 
-      pickup_location: pickupLocation.value, 
-      packages: packagesWithFlag,
-      phone: phoneNumber.value
-    });
-    
-    cart.value = []; 
-    bouquetIds.value = [1]; 
-    selectedPackaging.value = {}; 
-    pickupLocation.value = ''; 
-    phoneNumber.value = '';
-    saveLocal(); 
-    router.push('/profile'); 
-    toast.success('Заказ успешно оформлен!');
+    cart.value = []; bouquetIds.value = [1]; selectedPackaging.value = {}; 
+    pickupLocation.value = ''; saveLocal(); 
+    router.push('/profile'); toast.success('Заказ успешно оформлен!');
   } catch (e) {
-    // ... обработка ошибок
-  } finally { 
-    loading.value = false; 
-  }
+    if (e.response?.data?.status === 'shortage') {
+      shortages.value = e.response.data.shortages;
+      shortages.value.forEach(s => {
+        const cartItem = cart.value.find(i => i.id === s.flower_id);
+        if (cartItem) cartItem.available = s.available;
+      });
+      showReplacementModal.value = true;
+      return;
+    }
+    if (e.response?.data?.errors) error.value = Object.values(e.response.data.errors).flat().join('\n');
+    else error.value = e.response?.data?.error || e.response?.data?.message || 'Ошибка сервера';
+    toast.error(error.value);
+  } finally { loading.value = false; }
 };
 
 const applyReplacement = (originalId, newId, mode) => {

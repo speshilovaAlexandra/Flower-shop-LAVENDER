@@ -114,7 +114,7 @@
           <div class="modal-body">
             <div v-for="s in shortages" :key="s.flower_id" class="shortage-block">
               <div class="shortage-item">
-                <img :src="getImageUrl(s.image)" class="item-thumb" alt="" @error="handleImageError">
+                <img :src="s.image || '/images/placeholder.jpg'" class="item-thumb" alt="">
                 <div>
                   <h4>{{ s.name }}</h4>
                   <p>Запрошено: {{ s.requested }} шт. | В наличии: <strong>{{ s.available }} шт.</strong></p>
@@ -150,7 +150,6 @@ import { useRouter } from 'vue-router';
 import api from '@/api';
 import { useToastStore } from '@/stores/toast';
 import { useCart } from '@/composables/useCart';
-import { getImageUrl, handleImageError } from '@/utils/image';
 
 const router = useRouter();
 const toast = useToastStore();
@@ -363,140 +362,4 @@ onMounted(() => {
 .btn-checkout:disabled { background: #ccc; cursor: not-allowed; }
 .error-msg { display: flex; align-items: center; gap: 10px; color: var(--danger); background: #fee2e2; padding: 12px; border-radius: 8px; font-size: 0.9rem; margin-top: 15px; }
 @media (max-width: 991px) { .cart-content { flex-direction: column; } .summary-section { width: 100%; position: static; } }
-/* Добавьте в конец файла CartView.vue */
-
-/* Мобильная адаптация для корзины */
-@media (max-width: 768px) {
-  .cart-page {
-    padding: 30px 15px;
-  }
-
-  .page-title {
-    font-size: 1.8rem;
-    margin-bottom: 25px;
-  }
-
-  .cart-content {
-    flex-direction: column;
-    gap: 30px;
-  }
-
-  .cart-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 15px 0;
-  }
-
-  .item-details {
-    width: 100%;
-  }
-
-  .item-controls {
-    width: 100%;
-    flex-wrap: wrap;
-    justify-content: space-between;
-  }
-
-  .bouquet-switcher {
-    width: 100%;
-    margin-bottom: 10px;
-  }
-
-  .bouquet-switcher select {
-    flex: 1;
-  }
-
-  .qty-control {
-    order: 1;
-  }
-
-  .item-actions {
-    order: 2;
-    display: flex;
-    gap: 15px;
-    align-items: center;
-  }
-
-  .bouquet-options {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .packaging-price {
-    margin-left: 0;
-  }
-
-  .summary-section {
-    width: 100%;
-    position: static;
-    padding: 20px;
-  }
-
-  .summary-row.total {
-    font-size: 1.1rem;
-  }
-
-  .btn-checkout {
-    padding: 14px;
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .cart-page {
-    padding: 20px 12px;
-  }
-
-  .page-title {
-    font-size: 1.5rem;
-  }
-
-  .bouquet-title {
-    font-size: 1.2rem;
-  }
-
-  .bouquet-header {
-    flex-wrap: wrap;
-  }
-
-  .item-text h4 {
-    font-size: 1rem;
-  }
-
-  .item-price {
-    font-size: 0.8rem;
-  }
-
-  .item-total {
-    font-size: 1rem;
-    min-width: 70px;
-  }
-
-  .btn-add-bouquet {
-    padding: 12px;
-    font-size: 0.9rem;
-  }
-
-  /* Модальное окно */
-  .replacement-modal {
-    margin: 15px;
-    max-height: 80vh;
-  }
-
-  .shortage-item {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .suggestion-grid {
-    flex-direction: column;
-  }
-
-  .btn-suggest, .btn-reduce, .btn-remove-item {
-    width: 100%;
-    text-align: center;
-  }
-}
 </style>

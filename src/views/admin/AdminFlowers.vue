@@ -442,8 +442,23 @@ const openEdit = (flower) => {
   };
   showModal.value = true;
 };
-const showModal = ref(false);
+// const showModal = ref(false);
 const deleteItem = async (id) => {
+  // Проверяем, что confirmModal существует
+  if (!confirmModal.value) {
+    // fallback на старый confirm если что-то пошло не так
+    if (confirm('Вы уверены, что хотите удалить этот товар?')) {
+      try {
+        await api.delete(`/admin/flowers/${id}`);
+        toast.success('Товар успешно удалён');
+        load();
+      } catch (e) {
+        toast.error('Ошибка при удалении товара');
+      }
+    }
+    return;
+  }
+  
   const confirmed = await confirmModal.value.show({
     title: 'Удаление товара',
     message: 'Вы уверены, что хотите удалить этот товар? Это действие нельзя отменить.',
@@ -459,7 +474,7 @@ const deleteItem = async (id) => {
     toast.success('Товар успешно удалён');
     load();
   } catch (e) {
-    toast.error('Ошибка при удалении товара');
+    toast.error('Ошибка при удалении товара: ' + (e.response?.data?.message || 'Неизвестная ошибка'));
   }
 };
 

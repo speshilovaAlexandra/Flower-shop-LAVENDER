@@ -86,18 +86,18 @@
               <option disabled value="">Выберите магазин</option>
               <option v-for="p in pickupPoints" :key="p" :value="p">{{ p }}</option>
             </select> 
-            <div class="phone-section">
-            <label for="phone">📞 Номер телефона</label>
-            <input 
-              id="phone"
-              v-model="phoneNumber" 
-              type="tel" 
-              placeholder="+7 (___) ___-__-__"
-              class="form-input-phone"
-              @input="formatPhoneNumber"
-            />
-            <p class="phone-hint">Если у нас будут вопросы, мы свяжемся с вами по этому номеру</p>
-          </div>
+              <div class="phone-section">
+              <label for="phone">Номер телефона</label>
+              <input 
+                id="phone"
+                v-model="phoneNumber" 
+                type="tel" 
+                placeholder="+7 (___) ___-__-__"
+                class="form-input-phone"
+                @input="formatPhoneNumber"
+                />
+                <p class="phone-hint">Если у нас будут вопросы, мы свяжемся с вами по этому номеру</p>
+              </div>
           </div>
          
           <div class="checkout-area">

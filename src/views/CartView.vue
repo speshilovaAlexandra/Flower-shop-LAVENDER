@@ -138,9 +138,7 @@
               
               <div class="shortage-content">
                 <div class="product-row">
-                  <div class="product-image">
-                     <img :src="getImageUrl(flower.flower_image_url || flower.image_url || flower.flower_img || flower.img)" :alt="flower.nazvanie" @error="handleImageError">
-                  </div>
+                  
                   <div class="product-details">
                     <h4>{{ s.name }}</h4>
                     <div class="stock-info">

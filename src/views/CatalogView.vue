@@ -140,6 +140,13 @@ const formatPrice = (price) => new Intl.NumberFormat('ru-RU').format(price) + ' 
 const { cart, bouquetIds, saveLocal } = useCart();
 
 const addToCart = (flower) => {
+  // ✅ Проверка авторизации
+  if (!authStore.isAuthenticated) {
+    toast.warning('Войдите в аккаунт, чтобы добавить товар в корзину');
+    router.push('/login');
+    return;
+  }
+  
   const activeId = bouquetIds.value.length > 0 ? bouquetIds.value[bouquetIds.value.length - 1] : 1;
   const existing = cart.value.find(i => i.id === flower.id && i.bouquet_id === activeId);
   if (existing) {

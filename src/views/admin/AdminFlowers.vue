@@ -279,7 +279,7 @@ import { useToastStore } from '@/stores/toast';
 import { getImageUrl, handleImageError } from '@/utils/image';
 import ConfirmModal from '@/components/ConfirmModal.vue';
 
-const confirmModal = ref(null);
+
 const selectedCsv = ref(null);
 const uploading = ref(false);
 const importResult = ref(null);
@@ -339,7 +339,7 @@ const showModal = ref(false);
 const editingId = ref(null);
 const saving = ref(false);
 const currentFlowerImg = ref(null);
-
+const confirmModal = ref(null);
 const form = ref({ 
   nazvanie: '', 
   price: '', 

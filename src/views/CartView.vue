@@ -87,7 +87,18 @@
               <option v-for="p in pickupPoints" :key="p" :value="p">{{ p }}</option>
             </select>
           </div>
-
+          <div class="phone-section">
+            <label for="phone">📞 Номер телефона</label>
+            <input 
+              id="phone"
+              v-model="phoneNumber" 
+              type="tel" 
+              placeholder="+7 (___) ___-__-__"
+              class="form-input-phone"
+              @input="formatPhoneNumber"
+            />
+            <p class="phone-hint">Если у нас будут вопросы, мы свяжемся с вами по этому номеру</p>
+          </div>
           <div class="checkout-area">
             <button class="btn-checkout" @click="sendOrder" :disabled="loading || !pickupLocation">
               <span v-if="loading">Обработка...</span>
@@ -216,7 +227,61 @@ const removeBouquetGroup = (bid) => {
     saveLocal();
   }
 };
+// Добавляем переменную
+const phoneNumber = ref('');
 
+// Функция форматирования телефона
+const formatPhoneNumber = (e) => {
+  let value = e.target.value.replace(/\D/g, '');
+  if (value.length > 11) value = value.slice(0, 11);
+  
+  if (value.length === 0) {
+    phoneNumber.value = '';
+  } else if (value.length <= 1) {
+    phoneNumber.value = `+7 (${value}`;
+  } else if (value.length <= 4) {
+    phoneNumber.value = `+7 (${value.slice(0, 3)}${value.length > 3 ? ')' : ''}`;
+  } else if (value.length <= 7) {
+    phoneNumber.value = `+7 (${value.slice(0, 3)}) ${value.slice(3)}`;
+  } else if (value.length <= 9) {
+    phoneNumber.value = `+7 (${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6)}`;
+  } else {
+    phoneNumber.value = `+7 (${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6, 8)}-${value.slice(8, 10)}`;
+  }
+};
+
+// В sendOrder добавляем phone_number
+const sendOrder = async () => {
+  if (!pickupLocation.value) return error.value = 'Выберите точку самовывоза';
+  if (!phoneNumber.value || phoneNumber.value.replace(/\D/g, '').length < 11) {
+    return error.value = 'Введите корректный номер телефона';
+  }
+  
+  loading.value = true; 
+  error.value = '';
+  
+  try {
+    await api.post('/cart/validate', { packages: buildPackagesPayload() });
+    await api.post('/orders', { 
+      pickup_location: pickupLocation.value, 
+      packages: buildPackagesPayload(),
+      phone: phoneNumber.value // ✅ Отправляем телефон
+    });
+    
+    cart.value = []; 
+    bouquetIds.value = [1]; 
+    selectedPackaging.value = {}; 
+    pickupLocation.value = ''; 
+    phoneNumber.value = '';
+    saveLocal(); 
+    router.push('/profile'); 
+    toast.success('Заказ успешно оформлен!');
+  } catch (e) {
+    // ... обработка ошибок
+  } finally { 
+    loading.value = false; 
+  }
+};
 const buildPackagesPayload = () => bouquetIds.value.map(bid => {
   const items = cart.value.filter(i => i.bouquet_id === bid);
   if (items.length === 0) return null;
@@ -298,7 +363,39 @@ onMounted(() => {
   background: #f3f4f6;
   border-radius: 4px;
 }
+.phone-section {
+  margin: 20px 0;
+}
 
+.phone-section label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
+.form-input-phone {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.form-input-phone:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(72, 28, 105, 0.1);
+}
+
+.phone-hint {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
 /* ===== КРАСИВОЕ МОДАЛЬНОЕ ОКНО ===== */
 .modal-overlay {
   position: fixed;

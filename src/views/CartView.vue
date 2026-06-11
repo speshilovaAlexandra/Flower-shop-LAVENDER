@@ -210,12 +210,8 @@ const buildPackagesPayload = () => bouquetIds.value.map(bid => {
   if (items.length === 0) return null;
   return {
     packaging: selectedPackaging.value[bid] || 'none',
-    // ✅ Добавляем price в отправляемые данные
-    items: items.map(item => ({ 
-      id: item.id, 
-      qty: item.qty, 
-      price: item.price // <--- Передаем фактическую цену из корзины (100 ₽ или 1000 ₽)
-    }))
+    packaging_price: getPackagingPrice(bid), // 🆕 Передаем стоимость упаковки для этой сборки
+    items: items.map(item => ({ id: item.id, qty: item.qty, price: item.price }))
   };
 }).filter(Boolean);
 

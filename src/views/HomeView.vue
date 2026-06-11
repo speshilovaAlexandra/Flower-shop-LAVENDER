@@ -29,74 +29,22 @@
       </div>
       <router-link to="/catalog" class="btn-secondary">Смотреть все цветы</router-link>
     </section>
-
-    <!-- Additional Products Section -->
-    <!-- <section class="section">
-      <h2>Дополнения к букету</h2>
-      <div class="products-grid">
-        <div v-for="product in additionalProducts" :key="product.id" class="product-card">
-          <div class="product-image">
-        <img :src="getImageUrl(product.image_url || product.img)" :alt="product.name" loading="lazy">
-            <span class="category-badge">{{ getCategoryName(product.category) }}</span>
-          </div>
-          <h3>{{ product.name }}</h3>
-          <p class="price">{{ formatPrice(product.price) }}</p>
-          <button class="btn-add" @click.stop="addToCart(product)">В корзину</button>
-        </div>
-      </div>
-    </section> -->
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
 import api from '@/api';
-import { useAuthStore } from '@/stores/auth';
 import { getImageUrl, handleImageError } from '@/utils/image';
 
 const flowers = ref([]);
-const additionalProducts = ref([]);
-const authStore = useAuthStore();
 
 const formatPrice = (price) => new Intl.NumberFormat('ru-RU').format(price) + ' ₽';
-
-const getCategoryName = (category) => {
-  const names = {
-    cake: 'Тортик',
-    card: 'Открытка',
-    toy: 'Игрушка',
-    chocolate: 'Шоколад'
-  };
-  return names[category] || category;
-};
-
-const addToCart = (product) => {
-  if (!authStore.isAuthenticated) {
-    alert('Войдите, чтобы добавить в корзину');
-    return;
-  }
-  let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-  const item = cart.find(i => i.id === product.id && i.type === 'additional');
-  if (item) {
-    item.qty++;
-  } else {
-    cart.push({ 
-      id: product.id, 
-      name: product.name, 
-      price: product.price, 
-      qty: 1, 
-      type: 'additional' 
-    });
-  }
-  localStorage.setItem('cart', JSON.stringify(cart));
-  alert('Добавлено в корзину!');
-};
 
 onMounted(async () => {
   try {
     const { data } = await api.get('/home');
     flowers.value = data.flowers;
-    additionalProducts.value = data.additional_products;
   } catch (e) {
     console.error('Ошибка загрузки главной:', e);
   }
@@ -148,7 +96,6 @@ onMounted(async () => {
   box-shadow: 0 20px 25px rgba(0,0,0,0.1);
 }
 .product-image {
-  position: relative;
   height: 300px;
   overflow: hidden;
   background: #f3f4f6;
@@ -157,17 +104,6 @@ onMounted(async () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-.category-badge {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: #481C69;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
 }
 .product-card h3 {
   margin: 20px 16px 8px;
@@ -180,19 +116,6 @@ onMounted(async () => {
   font-weight: 700;
   color: #481C69;
 }
-.btn-add {
-  width: calc(100% - 32px);
-  margin: 0 16px 20px;
-  padding: 12px;
-  background: #481C69;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-add:hover { background: #361550; }
 .btn-secondary {
   display: block;
   text-align: center;
@@ -211,10 +134,46 @@ onMounted(async () => {
   background: #481C69;
   color: white;
 }
+
+/* ===== АДАПТИВ ПОД 390px ===== */
 @media (max-width: 768px) {
+  .hero { padding: 60px 20px; }
   .hero h1 { font-size: 2.5rem; }
-  .hero p { font-size: 1.1rem; }
-  .section h2 { font-size: 1.8rem; }
-  .products-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+  .hero p { font-size: 1.1rem; margin-bottom: 30px; }
+  .btn-primary { padding: 12px 24px; font-size: 1rem; }
+  .section { padding: 40px 15px; }
+  .section h2 { font-size: 1.8rem; margin-bottom: 25px; }
+  .products-grid { gap: 15px; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  .product-image { height: 200px; }
+  .product-card h3 { font-size: 0.95rem; margin: 12px 10px 6px; }
+  .price { font-size: 1.1rem; margin: 0 10px 12px; }
+  .btn-secondary { padding: 10px 20px; font-size: 0.9rem; max-width: 250px; }
+}
+
+@media (max-width: 480px) {
+  .hero { padding: 50px 15px; }
+  .hero h1 { font-size: 2rem; }
+  .hero p { font-size: 1rem; margin-bottom: 25px; }
+  .btn-primary { padding: 10px 20px; font-size: 0.9rem; }
+  .section { padding: 30px 12px; }
+  .section h2 { font-size: 1.5rem; margin-bottom: 20px; }
+  .products-grid { gap: 12px; grid-template-columns: 1fr 1fr; }
+  .product-image { height: 160px; }
+  .product-card h3 { font-size: 0.85rem; margin: 10px 8px 5px; }
+  .price { font-size: 1rem; margin: 0 8px 10px; }
+  .btn-secondary { padding: 8px 16px; font-size: 0.85rem; max-width: 200px; }
+}
+
+@media (max-width: 390px) {
+  .hero { padding: 40px 12px; }
+  .hero h1 { font-size: 1.8rem; }
+  .hero p { font-size: 0.9rem; margin-bottom: 20px; }
+  .btn-primary { padding: 8px 16px; font-size: 0.85rem; gap: 6px; }
+  .section { padding: 25px 10px; }
+  .section h2 { font-size: 1.3rem; margin-bottom: 15px; }
+  .products-grid { gap: 10px; }
+  .product-image { height: 140px; }
+  .product-card h3 { font-size: 0.8rem; margin: 8px 6px 4px; line-height: 1.3; }
+  .price { font-size: 0.9rem; margin: 0 6px 8px; }
 }
 </style>

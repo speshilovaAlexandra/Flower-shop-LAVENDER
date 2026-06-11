@@ -292,31 +292,31 @@ const buildPackagesPayload = () => bouquetIds.value.map(bid => {
   };
 }).filter(Boolean);
 
-const sendOrder = async () => {
-  if (!pickupLocation.value) return error.value = 'Выберите точку самовывоза';
-  loading.value = true; error.value = '';
-  try {
-    await api.post('/cart/validate', { packages: buildPackagesPayload() });
-    await api.post('/orders', { pickup_location: pickupLocation.value, packages: buildPackagesPayload() });
+// const sendOrder = async () => {
+//   if (!pickupLocation.value) return error.value = 'Выберите точку самовывоза';
+//   loading.value = true; error.value = '';
+//   try {
+//     await api.post('/cart/validate', { packages: buildPackagesPayload() });
+//     await api.post('/orders', { pickup_location: pickupLocation.value, packages: buildPackagesPayload() });
     
-    cart.value = []; bouquetIds.value = [1]; selectedPackaging.value = {}; 
-    pickupLocation.value = ''; saveLocal(); 
-    router.push('/profile'); toast.success('Заказ успешно оформлен!');
-  } catch (e) {
-    if (e.response?.data?.status === 'shortage') {
-      shortages.value = e.response.data.shortages;
-      shortages.value.forEach(s => {
-        const cartItem = cart.value.find(i => i.id === s.flower_id);
-        if (cartItem) cartItem.available = s.available;
-      });
-      showReplacementModal.value = true;
-      return;
-    }
-    if (e.response?.data?.errors) error.value = Object.values(e.response.data.errors).flat().join('\n');
-    else error.value = e.response?.data?.error || e.response?.data?.message || 'Ошибка сервера';
-    toast.error(error.value);
-  } finally { loading.value = false; }
-};
+//     cart.value = []; bouquetIds.value = [1]; selectedPackaging.value = {}; 
+//     pickupLocation.value = ''; saveLocal(); 
+//     router.push('/profile'); toast.success('Заказ успешно оформлен!');
+//   } catch (e) {
+//     if (e.response?.data?.status === 'shortage') {
+//       shortages.value = e.response.data.shortages;
+//       shortages.value.forEach(s => {
+//         const cartItem = cart.value.find(i => i.id === s.flower_id);
+//         if (cartItem) cartItem.available = s.available;
+//       });
+//       showReplacementModal.value = true;
+//       return;
+//     }
+//     if (e.response?.data?.errors) error.value = Object.values(e.response.data.errors).flat().join('\n');
+//     else error.value = e.response?.data?.error || e.response?.data?.message || 'Ошибка сервера';
+//     toast.error(error.value);
+//   } finally { loading.value = false; }
+// };
 
 const applyReplacement = (originalId, newId, mode) => {
   const idx = cart.value.findIndex(i => i.id === originalId);

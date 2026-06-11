@@ -1,10 +1,9 @@
-<!-- components/ConfirmModal.vue -->
 <template>
   <transition name="modal-fade">
     <div v-if="visible" class="confirm-overlay" @click.self="cancel">
       <div class="confirm-modal">
-        <div class="confirm-icon" :class="type">
-          <svg v-if="type === 'danger'" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <div class="confirm-icon" :class="modalType">
+          <svg v-if="modalType === 'danger'" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/>
             <line x1="12" y1="8" x2="12" y2="12"/>
             <line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -14,11 +13,11 @@
             <polyline points="22 4 12 14.01 9 11.01"/>
           </svg>
         </div>
-        <h3>{{ title }}</h3>
-        <p>{{ message }}</p>
+        <h3>{{ modalTitle }}</h3>
+        <p>{{ modalMessage }}</p>
         <div class="confirm-actions">
-          <button class="btn-confirm-cancel" @click="cancel">{{ cancelText }}</button>
-          <button class="btn-confirm-ok" :class="type" @click="confirm">{{ confirmText }}</button>
+          <button class="btn-confirm-cancel" @click="cancel">{{ modalCancelText }}</button>
+          <button class="btn-confirm-ok" :class="modalType" @click="confirm">{{ modalConfirmText }}</button>
         </div>
       </div>
     </div>
@@ -31,12 +30,19 @@ import { ref } from 'vue';
 const visible = ref(false);
 let resolvePromise = null;
 
+// Объявляем все переменные как ref
+const modalTitle = ref('Подтверждение');
+const modalMessage = ref('Вы уверены?');
+const modalConfirmText = ref('Да');
+const modalCancelText = ref('Отмена');
+const modalType = ref('warning');
+
 const show = (options) => {
-  title.value = options.title || 'Подтверждение';
-  message.value = options.message || 'Вы уверены?';
-  confirmText.value = options.confirmText || 'Да';
-  cancelText.value = options.cancelText || 'Отмена';
-  type.value = options.type || 'warning';
+  modalTitle.value = options?.title || 'Подтверждение';
+  modalMessage.value = options?.message || 'Вы уверены?';
+  modalConfirmText.value = options?.confirmText || 'Да';
+  modalCancelText.value = options?.cancelText || 'Отмена';
+  modalType.value = options?.type || 'warning';
   visible.value = true;
   
   return new Promise((resolve) => {
@@ -54,6 +60,7 @@ const cancel = () => {
   if (resolvePromise) resolvePromise(false);
 };
 
+// Экспортируем метод show для использования в родительском компоненте
 defineExpose({ show });
 </script>
 
@@ -135,6 +142,7 @@ defineExpose({ show });
   cursor: pointer;
   transition: all 0.2s;
   border: none;
+  font-size: 0.9rem;
 }
 
 .btn-confirm-cancel {
@@ -163,8 +171,13 @@ defineExpose({ show });
   background: #f59e0b;
 }
 
+.btn-confirm-ok.warning:hover {
+  background: #d97706;
+}
+
 .btn-confirm-ok:hover {
   transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 @keyframes fadeIn {

@@ -13,7 +13,7 @@
      <div class="catalog-grid">
        <div v-for="flower in flowers" :key="flower.id" class="flower-card" @click="addToBouquet(flower)">
          <div class="flower-img">
-          <img :src="getImageUrl(flower.flower_image_url || flower.image_url || flower.flower_img || flower.img)" :alt="flower.nazvanie" @error="handleImageError">
+          <img :src="flower.flower_image_url || flower.image_url || '/images/placeholder.jpg'" :alt="flower.nazvanie">
         </div>
          <div class="flower-info">
            <h3>{{ flower.nazvanie }}</h3>
@@ -80,7 +80,7 @@
        <div class="flowers-grid">
          <div v-for="(item, index) in autoItems" :key="item.id" class="flower-card static">
            <div class="flower-img">
-            <img :src="getImageUrl(item.flower_image_url || item.image_url || item.flower_img || item.img)" :alt="item.nazvanie" @error="handleImageError">
+            <img :src="item.flower_image_url || item.image_url || '/images/placeholder.jpg'" :alt="item.nazvanie">           
           </div>
            <div class="flower-info">
              <h3>{{ item.nazvanie }}</h3>
@@ -113,7 +113,6 @@ import api from '@/api';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
-import { getImageUrl, handleImageError } from '@/utils/image';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -267,148 +266,4 @@ h1 { text-align: center; color: #1f2937; margin-bottom: 10px; }
 .auto-result .flowers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
 .total-row { background: #f9fafb; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 1.2rem; }
 @media (max-width: 900px) { .manual-container { flex-direction: column; } .bouquet-summary { width: 100%; position: static; } }
- /* Добавьте в конец файла ConstructorView.vue */
-
-@media (max-width: 900px) {
-  .constructor-page {
-    margin: 20px auto;
-    padding: 0 15px;
-  }
-  
-  .manual-container {
-    flex-direction: column;
-  }
-  
-  .bouquet-summary {
-    width: 100%;
-    position: static;
-    margin-top: 30px;
-  }
-  
-  .catalog-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 15px;
-  }
-  
-  .flower-img {
-    height: 150px;
-  }
-  
-  .flower-info {
-    padding: 12px;
-  }
-  
-  .flower-info h3 {
-    font-size: 0.9rem;
-  }
-  
-  .price {
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 600px) {
-  .constructor-page h1 {
-    font-size: 1.5rem;
-  }
-  
-  .subtitle {
-    font-size: 0.9rem;
-  }
-  
-  .mode-switcher {
-    gap: 10px;
-  }
-  
-  .mode-switcher button {
-    padding: 8px 20px;
-    font-size: 0.9rem;
-  }
-  
-  .catalog-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 12px;
-  }
-  
-  .flower-img {
-    height: 130px;
-  }
-  
-  .flower-info {
-    padding: 10px;
-  }
-  
-  .btn-add-small {
-    padding: 6px;
-    font-size: 0.85rem;
-  }
-  
-  .sticky-card {
-    padding: 20px;
-  }
-  
-  .sticky-card h2 {
-    font-size: 1.3rem;
-  }
-  
-  .bouquet-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  
-  .item-actions {
-    width: 100%;
-    justify-content: space-between;
-  }
-  
-  .budget-card {
-    padding: 20px;
-  }
-  
-  .budget-inputs {
-    flex-direction: column;
-  }
-  
-  .budget-inputs button {
-    padding: 12px;
-  }
-  
-  .auto-result .flowers-grid {
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 12px;
-  }
-  
-  .total-row {
-    flex-direction: column;
-    gap: 15px;
-    text-align: center;
-  }
-  
-  .total-row button {
-    width: 100%;
-  }
-}
-
-@media (max-width: 400px) {
-  .catalog-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-  
-  .flower-img {
-    height: 120px;
-  }
-  
-  .flower-info h3 {
-    font-size: 0.85rem;
-  }
-  
-  .price-block .price {
-    font-size: 0.9rem;
-  }
-  
-  .price-hint {
-    font-size: 0.65rem;
-  }
-}
 </style>

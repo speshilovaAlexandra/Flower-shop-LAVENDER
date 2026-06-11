@@ -171,10 +171,17 @@ const generateAutoBouquet = async () => {
   }
 };
 
+// 🆕 ДИНАМИЧЕСКАЯ ЛОГИКА ID И КОРЗИНЫ
+const getBouquetIds = () => JSON.parse(localStorage.getItem('cart_bouquet_ids') || '[]');
+const getNextBouquetId = () => {
+  const ids = getBouquetIds();
+  return ids.length > 0 ? Math.max(...ids) + 1 : 1;
+};
+
 import { useCart } from '@/composables/useCart';
+// ... внутри setup ...
 const { cart, bouquetIds, selectedPackaging, saveLocal, isAuthenticated } = useCart();
 
-// 🔧 ИСПРАВЛЕНА ФУНКЦИЯ СОХРАНЕНИЯ В КОРЗИНУ
 const saveToCart = (items, sourceType) => {
   if (!isAuthenticated.value) return router.push('/login');
   if (items.length === 0) return toast.warning('Букет пуст');
@@ -183,17 +190,10 @@ const saveToCart = (items, sourceType) => {
   bouquetIds.value.push(newId);
   selectedPackaging.value[newId] = 'none';
 
-  // ✅ ПРАВИЛЬНОЕ преобразование: price_per_stem сохраняем в price
   const mapped = items.map(item => ({
-    id: item.id, 
-    nazvanie: item.nazvanie,
-    price: item.price_per_stem,  // ← КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: используем цену за стебель
-    original_price: item.price,   // опционально: сохраняем оригинальную цену букета
-    qty: item.qty,
-    type: 'constructor', 
-    source: sourceType, 
-    bouquet_id: newId,
-    image: item.flower_image_url || item.image_url || item.img
+    id: item.id, nazvanie: item.nazvanie,
+    price: item.price_per_stem, qty: item.qty,
+    type: 'constructor', source: sourceType, bouquet_id: newId
   }));
 
   mapped.forEach(newItem => {
@@ -208,7 +208,6 @@ const saveToCart = (items, sourceType) => {
   if (sourceType === 'constructor_manual') manualItems.value = [];
   else autoItems.value = [];
 };
-
 const orderManualBouquet = () => saveToCart(manualItems.value, 'constructor_manual');
 const orderAutoBouquet = () => saveToCart(autoItems.value, 'constructor_auto');
 
@@ -217,11 +216,7 @@ const formatPrice = (price) => new Intl.NumberFormat('ru-RU').format(price) + ' 
 onMounted(async () => {
   try {
     const { data } = await api.get('/constructor/flowers');
-    // ✅ Убеждаемся, что price_per_stem рассчитан правильно
-    flowers.value = data.map(f => ({
-      ...f,
-      price_per_stem: f.price_per_stem || Math.round(f.price / 10 * 100) / 100
-    }));
+    flowers.value = data;
   } catch (e) {
     console.error('Ошибка загрузки цветов', e);
     toast.error('Не удалось загрузить цветы для конструктора');

@@ -1,26 +1,37 @@
-export const PLACEHOLDER = '/images/placeholder.jpg'
+// src/utils/image.js
 
-export function getImageUrl(imagePath) {
-  if (!imagePath) return PLACEHOLDER
+// 🔧 Константа с прямым URL до папки storage на Beget
+// Замените на ваш реальный адрес
+const STORAGE_URL = 'https://flower-shop-lavender.vercel.app/storage';
+
+export const getImageUrl = (path) => {
+  if (!path) return '/images/placeholder.jpg';
   
-  // Извлекаем имя файла из любого пути
-  let filename = imagePath.split('/').pop()
-  
-  // Убираем параметры запроса, если есть
-  filename = filename.split('?')[0]
-  
-  // Проверяем, что это действительно имя файла (с расширением)
-  if (!filename.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-    return PLACEHOLDER
+  // Если уже полная ссылка
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
   }
   
-  // Формируем правильный URL через API маршрут
-  return `/api/storage/flowers/${filename}`
-}
+  // Убираем возможные префиксы
+  let cleanPath = path;
+  
+  // Убираем /storage/ если уже есть
+  if (cleanPath.startsWith('/storage/')) {
+    cleanPath = cleanPath.replace('/storage/', '');
+  }
+  // Убираем storage/ без слэша
+  if (cleanPath.startsWith('storage/')) {
+    cleanPath = cleanPath.replace('storage/', '');
+  }
+  // Убираем flowers/ если есть (но оно нужно, так что оставляем структуру)
+  
+  // Убираем лишние слэши в начале
+  cleanPath = cleanPath.replace(/^\/+/, '');
+  
+  // Возвращаем полный URL
+  return `${STORAGE_URL}/${cleanPath}`;
+};
 
-export function handleImageError(event) {
-  const img = event?.target
-  if (!img || img.src?.includes(PLACEHOLDER)) return
-  img.onerror = null
-  img.src = PLACEHOLDER
-}
+export const handleImageError = (e) => {
+  e.target.src = '/images/placeholder.jpg';
+};

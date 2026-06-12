@@ -98,16 +98,7 @@ php artisan storage:link -->
         <div class="footer-divider"></div>
 
         <!-- Нижняя часть: Контакты и навигация -->
-        <div class="footer-content">
-          <div class="footer-col">
-            <h3 class="logo-text">LAVENDER</h3>
-            <p class="description">Ваш любимый цветочный бутик с душой и заботой о каждом клиенте.</p>
-            <div class="social-links">
-              <a href="#" class="social-icon" title="VK">VK</a>
-              <a href="#" class="social-icon" title="Telegram">TG</a>
-              <a href="#" class="social-icon" title="WhatsApp">WA</a>
-            </div>
-          </div>
+
 
           <div class="footer-col">
             <h4>Навигация</h4>
@@ -115,6 +106,8 @@ php artisan storage:link -->
               <li><router-link to="/">Каталог</router-link></li>
               <!-- <li><router-link to="/team">О команде</router-link></li> -->
               <li><router-link to="/profile">Личный кабинет</router-link></li>
+              <li><router-link to="/cart">Корзина</router-link></li>
+              <li><router-link to="/constructor">Конструкор букетов</router-link></li>
             </ul>
           </div>
 

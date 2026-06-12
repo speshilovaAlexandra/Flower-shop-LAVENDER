@@ -136,7 +136,7 @@ php artisan storage:link -->
         <div class="footer-bottom">
           <p>&copy; 2026 Flower Boutique. All rights reserved.</p>
         </div>
-      </div>
+
     </footer>
   </div>
   <ToastContainer/>

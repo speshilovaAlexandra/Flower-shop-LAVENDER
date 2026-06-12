@@ -58,7 +58,7 @@
       <!-- Footer -->
       <div class="auth-footer">
         <p>Еще нет аккаунта? <router-link to="/register">Зарегистрироваться</router-link></p>
-        <router-link to="/forgot-password" class="forgot-link">Забыли пароль?</router-link>
+        
       </div>
     </div>
   </div>

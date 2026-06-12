@@ -96,21 +96,6 @@ php artisan storage:link -->
         </div>
 
         <div class="footer-divider"></div>
-
-        <!-- Нижняя часть: Контакты и навигация -->
-
-
-          <div class="footer-col">
-            <h4>Навигация</h4>
-            <ul class="footer-links">
-              <li><router-link to="/">Каталог</router-link></li>
-              <!-- <li><router-link to="/team">О команде</router-link></li> -->
-              <li><router-link to="/profile">Личный кабинет</router-link></li>
-              <li><router-link to="/cart">Корзина</router-link></li>
-              <li><router-link to="/constructor">Конструкор букетов</router-link></li>
-            </ul>
-          </div>
-
           <div class="footer-col">
             <h4>Контакты</h4>
             <ul class="contact-list">

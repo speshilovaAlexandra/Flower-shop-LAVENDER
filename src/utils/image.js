@@ -2,7 +2,11 @@
 
 // 🔧 Константа с прямым URL до папки storage на Beget
 // Замените на ваш реальный адрес
-const STORAGE_URL = 'https://flower-shop-lavender.vercel.app/storage';
+// ПРАВИЛЬНО — ведём на Beget
+const STORAGE_URL = 'https://lavender-flower.ru';
+
+// НЕПРАВИЛЬНО — ведём на Vercel (там файлов нет)
+// const STORAGE_URL = 'https://flower-shop-lavender.vercel.app/storage';
 
 export const getImageUrl = (path) => {
   if (!path) return '/images/placeholder.jpg';

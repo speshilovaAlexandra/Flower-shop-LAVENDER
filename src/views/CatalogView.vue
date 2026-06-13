@@ -685,4 +685,73 @@ const seo = {
     font-size: 0.9rem;
   }
 }
+ /* Адаптив под 368px */
+@media (max-width: 368px) {
+  .catalog-page {
+    padding: 15px 8px;
+  }
+
+  .page-title {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+  }
+
+  .filters {
+    gap: 6px;
+    margin-bottom: 15px;
+  }
+
+  .filter-input {
+    padding: 6px 8px;
+    font-size: 0.7rem;
+    min-width: 80px;
+  }
+
+  .filter-input.num {
+    width: 65px;
+    min-width: 60px;
+  }
+
+  .filter-input.select {
+    min-width: 100px;
+  }
+
+  .filter-btn {
+    padding: 6px 12px;
+    font-size: 0.7rem;
+  }
+
+  .product-grid {
+    gap: 8px;
+  }
+
+  .product-card {
+    width: calc(50% - 4px);
+    min-width: 110px;
+  }
+
+  .card-details {
+    padding: 8px;
+  }
+
+  .product-name {
+    font-size: 0.7rem;
+    min-height: 32px;
+    margin-bottom: 6px;
+  }
+
+  .product-price {
+    font-size: 0.85rem;
+  }
+
+  .btn-text-cart {
+    padding: 5px;
+    font-size: 0.65rem;
+  }
+
+  .placeholder-icon {
+    width: 32px;
+    height: 32px;
+  }
+}
 </style>

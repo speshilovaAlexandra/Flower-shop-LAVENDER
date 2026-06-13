@@ -600,74 +600,218 @@ const seo = {
   }
 }
 
-/* Очень маленькие телефоны (до 400px) */
+/* ========================================= */
+/* УЛУЧШЕННЫЙ АДАПТИВ ДЛЯ МАЛЕНЬКИХ ТЕЛЕФОНОВ */
+/* ========================================= */
 
-@media (max-width: 368px) {
+/* Очень маленькие телефоны (до 400px) */
+@media (max-width: 400px) {
   .catalog-page {
-    padding: 15px 8px;
+    padding: 20px 12px;
+  }
+
+  .catalog-header {
+    margin-bottom: 30px;
   }
 
   .page-title {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
+    margin-bottom: 18px;
+    line-height: 1.2;
+  }
+
+  /* Фильтры - вертикальная компоновка для удобства */
+  .filters {
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+    overflow-x: visible;
+    padding-bottom: 0;
+  }
+
+  .filter-input {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 0.9rem;
+    min-width: auto;
+  }
+
+  .filter-input.num {
+    width: 100%;
+  }
+
+  .filter-input.select {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .filter-btn {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 0.9rem;
+  }
+
+  /* Сетка товаров - одна колонка для лучшей читаемости */
+  .product-grid {
+    gap: 16px;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .product-card {
+    width: 100%;
+    max-width: 340px;
+    min-width: auto;
+    border-radius: 12px;
+  }
+
+  .card-details {
+    padding: 16px;
+  }
+
+  .product-name {
+    font-size: 1rem;
+    min-height: 44px;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+
+  .product-footer {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .product-price {
+    font-size: 1.25rem;
+    text-align: left;
+  }
+
+  .btn-text-cart {
+    width: auto;
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    min-height: 44px; /* Минимальный размер для тач-интерфейса */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .placeholder-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Улучшенные состояния загрузки */
+  .state-container {
+    padding: 60px 15px;
+  }
+
+  .icon-error,
+  .icon-empty {
+    font-size: 3rem;
+  }
+
+  .btn-retry {
+    padding: 12px 24px;
+    font-size: 0.95rem;
+    min-height: 44px;
+  }
+}
+
+/* Экстра маленькие телефоны (до 360px) */
+@media (max-width: 360px) {
+  .catalog-page {
+    padding: 15px 10px;
+  }
+
+  .page-title {
+    font-size: 1.3rem;
     margin-bottom: 15px;
   }
 
   .filters {
-    gap: 6px;
-    margin-bottom: 15px;
+    gap: 8px;
+    margin-bottom: 18px;
   }
 
   .filter-input {
-    padding: 6px 8px;
-    font-size: 0.7rem;
-    min-width: 80px;
-  }
-
-  .filter-input.num {
-    width: 65px;
-    min-width: 60px;
-  }
-
-  .filter-input.select {
-    min-width: 100px;
-  }
-
-  .filter-btn {
-    padding: 6px 12px;
-    font-size: 0.7rem;
-  }
-
-  .product-grid {
-    gap: 8px;
-  }
-
-  .product-card {
-    width: calc(50% - 4px);
-    min-width: 110px;
-  }
-
-  .card-details {
-    padding: 8px;
-  }
-
-  .product-name {
-    font-size: 0.7rem;
-    min-height: 32px;
-    margin-bottom: 6px;
-  }
-
-  .product-price {
+    padding: 10px 12px;
     font-size: 0.85rem;
   }
 
+  .filter-btn {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+  }
+
+  .product-grid {
+    gap: 12px;
+  }
+
+  .product-card {
+    max-width: 100%;
+  }
+
+  .card-details {
+    padding: 14px;
+  }
+
+  .product-name {
+    font-size: 0.95rem;
+    min-height: 40px;
+    margin-bottom: 10px;
+  }
+
+  .product-price {
+    font-size: 1.15rem;
+  }
+
   .btn-text-cart {
-    padding: 5px;
-    font-size: 0.65rem;
+    padding: 9px 14px;
+    font-size: 0.8rem;
   }
 
   .placeholder-icon {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* Дополнительные улучшения для тач-устройств */
+@media (hover: none) and (pointer: coarse) {
+  .product-card:hover {
+    transform: none; /* Отключаем hover-эффект на тач-устройствах */
+  }
+
+  .btn-text-cart {
+    min-height: 44px; /* Apple рекомендует минимум 44px для тач-целей */
+  }
+
+  .filter-btn,
+  .btn-retry {
+    min-height: 44px;
+  }
+}
+
+/* Оптимизация для landscape ориентации на маленьких экранах */
+@media (max-height: 500px) and (orientation: landscape) {
+  .catalog-page {
+    padding: 15px 20px;
+  }
+
+  .catalog-header {
+    margin-bottom: 20px;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+
+  .state-container {
+    padding: 40px 20px;
   }
 }
 </style>

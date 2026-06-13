@@ -205,7 +205,7 @@ body {
 .container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 200px;
   width: 100%;
 }
 

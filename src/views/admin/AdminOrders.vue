@@ -6,7 +6,7 @@
        <select v-model="statusFilter" class="form-select">
          <option value="">Все статусы</option>
          <option value="pending">Ожидает</option>
-         <option value="confirmed">Подтвержден</option>
+         <option value="confirmed">Готов к выдаче</option>
          <option value="completed">Завершен</option>
          <option value="canceled">Отменен</option>
        </select>
@@ -24,7 +24,7 @@
                <td><span class="price-tag">{{ formatPrice(order.total_price) }}</span></td>
                <td>
                  <select v-model="order.status" @change="updateStatus(order)" :class="'status-select status-' + order.status">
-                   <option value="pending">Ожидает</option><option value="confirmed">Подтвержден</option>
+                   <option value="pending">Ожидает</option><option value="confirmed">Готов к выдаче</option>
                    <option value="completed">Завершен</option><option value="canceled">Отменен</option>
                  </select>
                </td>
@@ -104,7 +104,7 @@ const getFlowerPrice = (id) => getFlowerDetails(id)?.pivot?.price_at_purchase ||
 const getFlowerImg = (id) => getFlowerDetails(id)?.flower_image_url || getFlowerDetails(id)?.image_url;
 const formatPrice = (p) => p ? new Intl.NumberFormat('ru-RU').format(p) + ' ₽' : '0 ₽';
 const formatDate = (d) => d ? new Date(d).toLocaleString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '-';
-const getStatusText = (s) => ({ pending:'Ожидает', confirmed:'Подтвержден', completed:'Завершен', canceled:'Отменен' }[s] || s);
+const getStatusText = (s) => ({ pending:'Ожидает', confirmed:'Готов к выдаче', completed:'Завершен', canceled:'Отменен' }[s] || s);
 
 onMounted(async () => {
   try { const { data } = await api.get('/admin/orders'); orders.value = data; }

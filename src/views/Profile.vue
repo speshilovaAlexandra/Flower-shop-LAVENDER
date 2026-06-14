@@ -65,7 +65,7 @@ const getFlowerPrice = (order, id) => order.flowers?.find(f => f.id == id)?.pivo
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
 const formatPrice = (p) => p ? new Intl.NumberFormat('ru-RU').format(p) + ' ₽' : '0 ₽';
-const translateStatus = (s) => ({ pending:'Ожидает', confirmed:'Подтвержден', completed:'Завершен', canceled:'Отменен' }[s] || s);
+const translateStatus = (s) => ({ pending:'Ожидает', confirmed:'Готов к выдаче', completed:'Завершен', canceled:'Отменен' }[s] || s);
 const getStatusClass = (s) => `status-${s}`;
 
 onMounted(async () => {

@@ -107,7 +107,7 @@
       </div>
     </div>
 
-    <!-- 🌸 КРАСИВОЕ МОДАЛЬНОЕ ОКНО В СТИЛЕ LAVENDER -->
+    <!-- 🌸 КРАСИВОЕ МОДАЛЬНОЕ ОКНО С УЧЕТОМ ТИПА ЗАКАЗА -->
     <transition name="modal-fade">
       <div v-if="showReplacementModal" class="modal-overlay" @click.self="showReplacementModal = false">
         <div class="replacement-modal">
@@ -121,7 +121,7 @@
               </svg>
             </div>
             <div class="header-text">
-              <h3>Требуется внимание</h3>
+              <h3>⚠️ Не хватает товара</h3>
               <p>Некоторые позиции отсутствуют в нужном количестве</p>
             </div>
             <button @click="showReplacementModal = false" class="close-modal">
@@ -138,17 +138,32 @@
               
               <div class="shortage-content">
                 <div class="product-row">
-                  
+                  <div class="product-image" v-if="s.image">
+                    <img :src="s.image" :alt="s.name">
+                  </div>
                   <div class="product-details">
                     <h4>{{ s.name }}</h4>
+                    
+                    <!-- 🔥 Информация о наличии с учетом типа заказа -->
                     <div class="stock-info">
-                      <span class="stock-label">В наличии:</span>
-                      <span class="stock-value" :class="{ 'stock-low': s.available < 5 }">{{ s.available }} шт.</span>
-                      <span class="requested-label">Запрошено:</span>
-                      <span class="requested-value">{{ s.requested }} шт.</span>
+                      <span class="stock-label">📦 В наличии:</span>
+                      <span class="stock-value" :class="{ 'stock-low': s.available < (s.is_constructor ? 1 : 1) }">
+                        {{ s.available }} {{ s.measure_unit || (s.is_constructor ? 'шт.' : 'букет(ов)') }}
+                      </span>
                     </div>
+                    
+                    <div class="stock-info">
+                      <span class="stock-label">🛒 Запрошено:</span>
+                      <span class="requested-value">{{ s.requested }} {{ s.measure_unit || (s.is_constructor ? 'шт.' : 'букет(ов)') }}</span>
+                    </div>
+                    
                     <div class="missing-badge">
-                      <span>Не хватает {{ s.missing }} шт.</span>
+                      <span>❌ Не хватает {{ s.missing }} {{ s.measure_unit || (s.is_constructor ? 'шт.' : 'букет(ов)') }}</span>
+                    </div>
+                    
+                    <!-- 🔥 Подсказка для каталога -->
+                    <div v-if="!s.is_constructor" class="hint-text">
+                      💡 Для 1 букета требуется 10 цветков
                     </div>
                   </div>
                 </div>
@@ -175,7 +190,7 @@
                     <span class="card-icon">📉</span>
                     <div class="card-info">
                       <span class="card-name">Уменьшить количество</span>
-                      <span class="card-hint">до {{ s.available }} шт.</span>
+                      <span class="card-hint">до {{ s.available }} {{ s.measure_unit || (s.is_constructor ? 'шт.' : 'букет(ов)') }}</span>
                     </div>
                     <span class="card-arrow">→</span>
                   </button>
@@ -253,10 +268,7 @@ const formatPrice = (price) => {
 
 // ===== 🆕 СОХРАНЕНИЕ ВСЕХ ДАННЫХ =====
 const saveFullState = () => {
-  // 1. Сохраняем через saveLocal (из useCart)
   saveLocal();
-  
-  // 2. Дополнительно сохраняем bouquetIds и packaging в localStorage
   try {
     localStorage.setItem('cart_bouquet_ids', JSON.stringify(bouquetIds.value));
     localStorage.setItem('cart_packaging', JSON.stringify(selectedPackaging.value));
@@ -268,7 +280,6 @@ const saveFullState = () => {
 // ===== 🆕 ВОССТАНОВЛЕНИЕ ДАННЫХ =====
 const restoreFullState = () => {
   try {
-    // Восстанавливаем bouquetIds
     const savedIds = localStorage.getItem('cart_bouquet_ids');
     if (savedIds) {
       const parsed = JSON.parse(savedIds);
@@ -277,7 +288,6 @@ const restoreFullState = () => {
       }
     }
     
-    // Восстанавливаем packaging
     const savedPackaging = localStorage.getItem('cart_packaging');
     if (savedPackaging) {
       const parsed = JSON.parse(savedPackaging);
@@ -286,15 +296,12 @@ const restoreFullState = () => {
       }
     }
     
-    // Если есть товары, но нет ID - создаем
     if (cart.value.length > 0 && bouquetIds.value.length === 0) {
       const uniqueIds = [...new Set(cart.value.map(i => i.bouquet_id))];
       bouquetIds.value = uniqueIds.length > 0 ? uniqueIds : [1];
     }
     
-    // Очищаем неиспользуемые ID
     cleanupBouquetIds();
-    
   } catch (e) {
     console.warn('Ошибка восстановления данных:', e);
   }
@@ -314,7 +321,6 @@ const cleanupBouquetIds = () => {
   if (validIds.length === 0) {
     const firstBouquetId = cart.value[0]?.bouquet_id || 1;
     bouquetIds.value = [firstBouquetId];
-    // Обновляем все товары на новый ID
     cart.value.forEach(item => {
       item.bouquet_id = firstBouquetId;
     });
@@ -322,7 +328,6 @@ const cleanupBouquetIds = () => {
     bouquetIds.value = validIds;
   }
   
-  // Удаляем пустые записи упаковки
   const usedIdsSet = new Set(bouquetIds.value);
   Object.keys(selectedPackaging.value).forEach(key => {
     if (!usedIdsSet.has(Number(key))) {
@@ -377,14 +382,12 @@ const buildPackagesPayload = () => {
     const items = cart.value.filter(i => i.bouquet_id === bid);
     if (items.length === 0) return null;
     
-    // 🔥 Определяем, из конструктора ли заказ
-    // Проверяем, есть ли у товаров тип 'constructor'
     const isConstructor = items.some(item => item.type === 'constructor' || item.source?.includes('constructor'));
     
     return {
       packaging: selectedPackaging.value[bid] || 'none',
       packaging_price: getPackagingPrice(bid),
-      is_constructor: isConstructor, // 🔥 Флаг для бэкенда
+      is_constructor: isConstructor,
       items: items.map(item => ({
         id: item.id,
         qty: item.qty,
@@ -475,19 +478,11 @@ watch([cart, bouquetIds, selectedPackaging], () => {
 
 // ===== MOUNTED =====
 onMounted(async () => {
-  // 1. Загружаем корзину с сервера или из localStorage
   await loadFromServer();
-  
-  // 2. Восстанавливаем bouquetIds и packaging из localStorage
   restoreFullState();
-  
-  // 3. Очищаем неиспользуемые ID
   cleanupBouquetIds();
-  
-  // 4. Финальное сохранение
   saveFullState();
   
-  // 5. Если есть товары, но нет ID - создаем
   if (cart.value.length > 0 && bouquetIds.value.length === 0) {
     const uniqueIds = [...new Set(cart.value.map(i => i.bouquet_id))];
     bouquetIds.value = uniqueIds.length > 0 ? uniqueIds : [1];
@@ -676,7 +671,7 @@ onMounted(async () => {
   margin-top: 15px;
 }
 
-/* ===== 🌸 КРАСИВОЕ МОДАЛЬНОЕ ОКНО LAVENDER ===== */
+/* ===== 🌸 КРАСИВОЕ МОДАЛЬНОЕ ОКНО ===== */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -736,13 +731,13 @@ onMounted(async () => {
 .modal-icon {
   width: 56px;
   height: 56px;
-  background: linear-gradient(135deg, var(--primary), #7c3aed);
+  background: linear-gradient(135deg, #f59e0b, #d97706);
   border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  box-shadow: 0 8px 20px rgba(72, 28, 105, 0.3);
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
 }
 
 .header-text {
@@ -753,19 +748,19 @@ onMounted(async () => {
   margin: 0 0 4px;
   font-size: 1.3rem;
   font-weight: 700;
-  color: var(--text-main);
+  color: #92400e;
 }
 
 .header-text p {
   margin: 0;
   font-size: 0.85rem;
-  color: var(--text-muted);
+  color: #b45309;
 }
 
 .close-modal {
   width: 36px;
   height: 36px;
-  background: var(--primary-light);
+  background: rgba(0, 0, 0, 0.08);
   border: none;
   border-radius: 50%;
   cursor: pointer;
@@ -773,12 +768,11 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   transition: all 0.25s;
-  color: var(--primary);
+  color: #92400e;
 }
 
 .close-modal:hover {
-  background: var(--primary);
-  color: white;
+  background: rgba(0, 0, 0, 0.15);
   transform: rotate(90deg);
 }
 
@@ -852,12 +846,22 @@ onMounted(async () => {
   color: var(--text-main);
 }
 
+.hint-text {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: #fef3c7;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  color: #92400e;
+  display: inline-block;
+}
+
 .stock-info {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   font-size: 0.8rem;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .stock-label {
@@ -873,10 +877,6 @@ onMounted(async () => {
   color: var(--danger);
 }
 
-.requested-label {
-  color: var(--text-muted);
-}
-
 .requested-value {
   font-weight: 600;
   color: var(--text-main);
@@ -890,6 +890,7 @@ onMounted(async () => {
   font-size: 0.7rem;
   font-weight: 600;
   color: var(--danger);
+  margin-top: 4px;
 }
 
 .replacement-title {
@@ -1265,7 +1266,6 @@ onMounted(async () => {
     padding: 10px;
   }
   
-  /* Адаптив модального окна */
   .replacement-modal {
     max-width: 95%;
     border-radius: 24px;
@@ -1360,7 +1360,6 @@ onMounted(async () => {
   }
 }
 
-/* Улучшения для touch устройств */
 @media (hover: none) and (max-width: 768px) {
   .replacement-card:hover {
     transform: none;

@@ -456,8 +456,8 @@ onMounted(() => {
 
 .cart-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: center;
+  /* align-items: center; */
   padding: 15px 0;
   border-bottom: 1px solid #eee;
 }

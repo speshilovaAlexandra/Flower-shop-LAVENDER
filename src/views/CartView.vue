@@ -209,7 +209,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/api';
 import { useToastStore } from '@/stores/toast';
@@ -217,7 +217,16 @@ import { useCart } from '@/composables/useCart';
 
 const router = useRouter();
 const toast = useToastStore();
-const { cart, bouquetIds, selectedPackaging, saveLocal, loadFromServer } = useCart();
+
+// ===== ИСПОЛЬЗУЕМ useCart ДЛЯ УПРАВЛЕНИЯ СОСТОЯНИЕМ =====
+const { 
+  cart, 
+  bouquetIds, 
+  selectedPackaging, 
+  saveCart, 
+  loadFromServer,
+  isAuthenticated 
+} = useCart();
 
 const showReplacementModal = ref(false);
 const shortages = ref([]);
@@ -238,59 +247,133 @@ const pickupPoints = [
   'г. Пермь, ул. Космонавтов, 110 (Индустриальный)'
 ];
 
-const getItemsForBouquet = (bid) => cart.value.filter(i => i.bouquet_id === bid);
-const getPackagingPrice = (bid) => packagingOptions.find(p => p.value === (selectedPackaging.value[bid] || 'none'))?.price || 0;
+// ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
+const getItemsForBouquet = (bid) => {
+  return cart.value.filter(i => i.bouquet_id === bid);
+};
 
-const totalItemsCount = computed(() => cart.value.reduce((acc, i) => acc + i.qty, 0));
-const totalGoodsPrice = computed(() => cart.value.reduce((sum, i) => sum + (i.price * i.qty), 0));
-const totalPackagingPrice = computed(() => bouquetIds.value.reduce((sum, id) => sum + getPackagingPrice(id), 0));
-const grandTotal = computed(() => totalGoodsPrice.value + totalPackagingPrice.value);
+const getPackagingPrice = (bid) => {
+  return packagingOptions.find(p => p.value === (selectedPackaging.value[bid] || 'none'))?.price || 0;
+};
 
-const formatPrice = (price) => new Intl.NumberFormat('ru-RU').format(price) + ' ₽';
+// ===== ВЫЧИСЛЯЕМЫЕ СВОЙСТВА =====
+const totalItemsCount = computed(() => {
+  return cart.value.reduce((acc, i) => acc + i.qty, 0);
+});
+
+const totalGoodsPrice = computed(() => {
+  return cart.value.reduce((sum, i) => sum + (i.price * i.qty), 0);
+});
+
+const totalPackagingPrice = computed(() => {
+  return bouquetIds.value.reduce((sum, id) => sum + getPackagingPrice(id), 0);
+});
+
+const grandTotal = computed(() => {
+  return totalGoodsPrice.value + totalPackagingPrice.value;
+});
+
+const formatPrice = (price) => {
+  if (!price && price !== 0) return '0 ₽';
+  return new Intl.NumberFormat('ru-RU').format(Math.round(price)) + ' ₽';
+};
 
 // ===== СОХРАНЕНИЕ ВСЕХ ДАННЫХ =====
 const saveFullState = () => {
-  saveLocal(); // Сохраняем корзину
-  localStorage.setItem('bouquetIds', JSON.stringify(bouquetIds.value));
-  localStorage.setItem('selectedPackaging', JSON.stringify(selectedPackaging.value));
+  // Сохраняем через useCart
+  saveCart();
+  
+  // Дополнительно сохраняем в localStorage для надежности
+  try {
+    localStorage.setItem('cart_items', JSON.stringify(cart.value));
+    localStorage.setItem('cart_bouquet_ids', JSON.stringify(bouquetIds.value));
+    localStorage.setItem('cart_packaging', JSON.stringify(selectedPackaging.value));
+  } catch (e) {
+    console.warn('Ошибка сохранения в localStorage:', e);
+  }
 };
 
 const loadFullState = () => {
-  // Загружаем bouquetIds
-  const savedBouquetIds = localStorage.getItem('bouquetIds');
-  if (savedBouquetIds) {
-    try {
-      const parsed = JSON.parse(savedBouquetIds);
+  // Пытаемся загрузить из localStorage
+  try {
+    const savedItems = localStorage.getItem('cart_items');
+    const savedIds = localStorage.getItem('cart_bouquet_ids');
+    const savedPackaging = localStorage.getItem('cart_packaging');
+    
+    if (savedItems) {
+      const parsed = JSON.parse(savedItems);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        cart.value = parsed;
+      }
+    }
+    
+    if (savedIds) {
+      const parsed = JSON.parse(savedIds);
       if (Array.isArray(parsed) && parsed.length > 0) {
         bouquetIds.value = parsed;
+      } else if (cart.value.length > 0) {
+        // Если есть товары, но нет ID - создаем ID
+        const uniqueIds = [...new Set(cart.value.map(i => i.bouquet_id))];
+        bouquetIds.value = uniqueIds.length > 0 ? uniqueIds : [1];
       }
-    } catch (e) {
-      console.warn('Ошибка загрузки bouquetIds:', e);
+    } else if (cart.value.length > 0) {
+      // Если нет ID, но есть товары - создаем
+      const uniqueIds = [...new Set(cart.value.map(i => i.bouquet_id))];
+      bouquetIds.value = uniqueIds.length > 0 ? uniqueIds : [1];
     }
-  }
-
-  // Загружаем selectedPackaging
-  const savedPackaging = localStorage.getItem('selectedPackaging');
-  if (savedPackaging) {
-    try {
+    
+    if (savedPackaging) {
       const parsed = JSON.parse(savedPackaging);
       if (typeof parsed === 'object' && parsed !== null) {
         selectedPackaging.value = parsed;
       }
-    } catch (e) {
-      console.warn('Ошибка загрузки selectedPackaging:', e);
     }
+  } catch (e) {
+    console.warn('Ошибка загрузки из localStorage:', e);
   }
+  
+  // Если корзина пуста, но есть ID - очищаем ID
+  if (cart.value.length === 0 && bouquetIds.value.length > 0) {
+    bouquetIds.value = [1];
+  }
+  
+  // Если есть товары, но нет ID - создаем
+  if (cart.value.length > 0 && bouquetIds.value.length === 0) {
+    const uniqueIds = [...new Set(cart.value.map(i => i.bouquet_id))];
+    bouquetIds.value = uniqueIds.length > 0 ? uniqueIds : [1];
+  }
+  
+  // Очищаем неиспользуемые ID
+  cleanupBouquetIds();
 };
 
 // Очистка неиспользуемых ID
 const cleanupBouquetIds = () => {
+  if (cart.value.length === 0) {
+    bouquetIds.value = [1];
+    return;
+  }
+  
   const usedIds = new Set(cart.value.map(i => i.bouquet_id));
-  bouquetIds.value = bouquetIds.value.filter(id => usedIds.has(id));
+  // Фильтруем только те ID, которые есть в корзине
+  const validIds = bouquetIds.value.filter(id => usedIds.has(id));
+  
+  // Если все ID невалидны - создаем новый
+  if (validIds.length === 0) {
+    const firstBouquetId = cart.value[0]?.bouquet_id || 1;
+    bouquetIds.value = [firstBouquetId];
+    // Обновляем все товары на новый ID
+    cart.value.forEach(item => {
+      item.bouquet_id = firstBouquetId;
+    });
+  } else {
+    bouquetIds.value = validIds;
+  }
   
   // Удаляем пустые записи упаковки
+  const usedIdsSet = new Set(bouquetIds.value);
   Object.keys(selectedPackaging.value).forEach(key => {
-    if (!usedIds.has(Number(key))) {
+    if (!usedIdsSet.has(Number(key))) {
       delete selectedPackaging.value[key];
     }
   });
@@ -298,16 +381,18 @@ const cleanupBouquetIds = () => {
 
 // ===== ОСНОВНЫЕ ФУНКЦИИ =====
 const changeQty = (item, delta) => {
-  item.qty = Math.max(1, item.qty + delta);
+  const newQty = item.qty + delta;
+  if (newQty < 1) return;
+  item.qty = newQty;
   saveFullState();
 };
 
 const removeItem = (item) => {
   cart.value = cart.value.filter(i => i !== item);
   // Удаляем пустые букеты
-  const usedBouquetIds = new Set(cart.value.map(i => i.bouquet_id));
-  bouquetIds.value = bouquetIds.value.filter(id => usedBouquetIds.has(id));
+  cleanupBouquetIds();
   saveFullState();
+  toast.info('Товар удалён из корзины');
 };
 
 const onQtyChange = (item) => {
@@ -332,38 +417,49 @@ const removeBouquetGroup = (bid) => {
     cart.value = cart.value.filter(i => i.bouquet_id !== bid);
     delete selectedPackaging.value[bid];
     saveFullState();
+    toast.success(`Сборка №${bid} удалена`);
   }
 };
 
-const buildPackagesPayload = () => bouquetIds.value.map(bid => {
-  const items = cart.value.filter(i => i.bouquet_id === bid);
-  if (items.length === 0) return null;
-  return {
-    packaging: selectedPackaging.value[bid] || 'none',
-    packaging_price: getPackagingPrice(bid),
-    items: items.map(item => ({
-      id: item.id,
-      qty: item.qty,
-      price: item.price
-    }))
-  };
-}).filter(Boolean);
+const buildPackagesPayload = () => {
+  return bouquetIds.value.map(bid => {
+    const items = cart.value.filter(i => i.bouquet_id === bid);
+    if (items.length === 0) return null;
+    return {
+      packaging: selectedPackaging.value[bid] || 'none',
+      packaging_price: getPackagingPrice(bid),
+      items: items.map(item => ({
+        id: item.id,
+        qty: item.qty,
+        price: item.price
+      }))
+    };
+  }).filter(Boolean);
+};
 
 const sendOrder = async () => {
-  if (!pickupLocation.value) return error.value = 'Выберите точку самовывоза';
+  if (!pickupLocation.value) {
+    error.value = 'Выберите точку самовывоза';
+    return;
+  }
+  
   loading.value = true;
   error.value = '';
+  
   try {
     await api.post('/cart/validate', { packages: buildPackagesPayload() });
     await api.post('/orders', {
       pickup_location: pickupLocation.value,
       packages: buildPackagesPayload()
     });
+    
+    // Очищаем корзину после успешного заказа
     cart.value = [];
     bouquetIds.value = [1];
     selectedPackaging.value = {};
     pickupLocation.value = '';
     saveFullState();
+    
     router.push('/profile');
     toast.success('Заказ успешно оформлен!');
   } catch (e) {
@@ -376,8 +472,11 @@ const sendOrder = async () => {
       showReplacementModal.value = true;
       return;
     }
-    if (e.response?.data?.errors) error.value = Object.values(e.response.data.errors).flat().join('\n');
-    else error.value = e.response?.data?.error || e.response?.data?.message || 'Ошибка сервера';
+    if (e.response?.data?.errors) {
+      error.value = Object.values(e.response.data.errors).flat().join('\n');
+    } else {
+      error.value = e.response?.data?.error || e.response?.data?.message || 'Ошибка сервера';
+    }
     toast.error(error.value);
   } finally {
     loading.value = false;
@@ -408,14 +507,30 @@ const applyReplacement = (originalId, newId, mode) => {
     cart.value.splice(idx, 1);
     toast.info('Товар удалён из заказа');
   }
+  
   saveFullState();
   showReplacementModal.value = false;
 };
 
-onMounted(() => {
+// ===== WATCH ДЛЯ АВТОСОХРАНЕНИЯ =====
+watch([cart, bouquetIds, selectedPackaging], () => {
+  saveFullState();
+}, { deep: true });
+
+// ===== MOUNTED =====
+onMounted(async () => {
+  // Сначала загружаем из localStorage
   loadFullState();
+  
+  // Затем синхронизируем с сервером (если авторизован)
+  if (isAuthenticated) {
+    await loadFromServer();
+    // После загрузки с сервера - пересохраняем локально
+    saveFullState();
+  }
+  
+  // Финальная очистка
   cleanupBouquetIds();
-  loadFromServer();
 });
 </script>
 

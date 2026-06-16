@@ -485,7 +485,7 @@ onMounted(() => {
   background: transparent;
   cursor: pointer;
 }
-.item-total { font-weight: 700; font-size: 1.1rem; min-width: 80px; text-align: right; }
+.item-total { font-weight: 700; font-size: 1.1rem; min-width: 80px;  }
 .btn-remove { background: none; border: none; cursor: pointer; color: #ccc; font-size: 1.2rem; }
 .btn-remove:hover { color: var(--danger); }
 

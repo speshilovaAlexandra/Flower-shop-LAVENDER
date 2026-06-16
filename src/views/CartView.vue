@@ -224,7 +224,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/api';
 import { useToastStore } from '@/stores/toast';
@@ -266,89 +266,15 @@ const formatPrice = (price) => {
   return new Intl.NumberFormat('ru-RU').format(Math.round(price)) + ' ₽';
 };
 
-// ===== 🆕 СОХРАНЕНИЕ ВСЕХ ДАННЫХ =====
-const saveFullState = () => {
-  saveLocal();
-  try {
-    localStorage.setItem('cart_bouquet_ids', JSON.stringify(bouquetIds.value));
-    localStorage.setItem('cart_packaging', JSON.stringify(selectedPackaging.value));
-  } catch (e) {
-    console.warn('Ошибка сохранения дополнительных данных:', e);
-  }
-};
-
-// ===== 🆕 ВОССТАНОВЛЕНИЕ ДАННЫХ =====
-const restoreFullState = () => {
-  try {
-    const savedIds = localStorage.getItem('cart_bouquet_ids');
-    if (savedIds) {
-      const parsed = JSON.parse(savedIds);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        bouquetIds.value = parsed;
-      }
-    }
-    
-    const savedPackaging = localStorage.getItem('cart_packaging');
-    if (savedPackaging) {
-      const parsed = JSON.parse(savedPackaging);
-      if (typeof parsed === 'object' && parsed !== null) {
-        selectedPackaging.value = parsed;
-      }
-    }
-    
-    if (cart.value.length > 0 && bouquetIds.value.length === 0) {
-      const uniqueIds = [...new Set(cart.value.map(i => i.bouquet_id))];
-      bouquetIds.value = uniqueIds.length > 0 ? uniqueIds : [1];
-    }
-    
-    cleanupBouquetIds();
-  } catch (e) {
-    console.warn('Ошибка восстановления данных:', e);
-  }
-};
-
-// ===== 🆕 ОЧИСТКА НЕИСПОЛЬЗУЕМЫХ ID =====
-const cleanupBouquetIds = () => {
-  if (cart.value.length === 0) {
-    bouquetIds.value = [1];
-    selectedPackaging.value = {};
-    return;
-  }
-  
-  const usedIds = new Set(cart.value.map(i => i.bouquet_id));
-  const validIds = bouquetIds.value.filter(id => usedIds.has(id));
-  
-  if (validIds.length === 0) {
-    const firstBouquetId = cart.value[0]?.bouquet_id || 1;
-    bouquetIds.value = [firstBouquetId];
-    cart.value.forEach(item => {
-      item.bouquet_id = firstBouquetId;
-    });
-  } else {
-    bouquetIds.value = validIds;
-  }
-  
-  const usedIdsSet = new Set(bouquetIds.value);
-  Object.keys(selectedPackaging.value).forEach(key => {
-    if (!usedIdsSet.has(Number(key))) {
-      delete selectedPackaging.value[key];
-    }
-  });
-};
-
 // ===== ОСНОВНЫЕ ФУНКЦИИ =====
 const changeQty = (item, delta) => {
-  const newQty = (item.qty || 0) + delta;
-  if (newQty < 1) return;
-  item.qty = newQty;
-  saveFullState();
+  item.qty = Math.max(1, item.qty + delta);
+  saveLocal();
 };
 
 const removeItem = (item) => {
   cart.value = cart.value.filter(i => i !== item);
-  cleanupBouquetIds();
-  saveFullState();
-  toast.info('Товар удалён из корзины');
+  saveLocal();
 };
 
 const onQtyChange = (item) => {
@@ -356,14 +282,14 @@ const onQtyChange = (item) => {
   if (isNaN(val) || val < 1) val = 1;
   if (val > 999) val = 999;
   item.qty = val;
-  saveFullState();
+  saveLocal();
 };
 
 const addNewBouquetGroup = () => {
   const newId = bouquetIds.value.length > 0 ? Math.max(...bouquetIds.value) + 1 : 1;
   bouquetIds.value.push(newId);
   selectedPackaging.value[newId] = 'none';
-  saveFullState();
+  saveLocal();
   toast.success(`Создана сборка №${newId}`);
 };
 
@@ -372,22 +298,23 @@ const removeBouquetGroup = (bid) => {
     bouquetIds.value = bouquetIds.value.filter(id => id !== bid);
     cart.value = cart.value.filter(i => i.bouquet_id !== bid);
     delete selectedPackaging.value[bid];
-    saveFullState();
-    toast.success(`Сборка №${bid} удалена`);
+    saveLocal();
   }
 };
 
+// 🔥 СБОРКА ПАКЕТОВ С ОПРЕДЕЛЕНИЕМ ТИПА ЗАКАЗА
 const buildPackagesPayload = () => {
   return bouquetIds.value.map(bid => {
     const items = cart.value.filter(i => i.bouquet_id === bid);
     if (items.length === 0) return null;
     
+    // 🔥 Определяем, из конструктора ли заказ
     const isConstructor = items.some(item => item.type === 'constructor' || item.source?.includes('constructor'));
     
     return {
       packaging: selectedPackaging.value[bid] || 'none',
       packaging_price: getPackagingPrice(bid),
-      is_constructor: isConstructor,
+      is_constructor: isConstructor, // 🔥 Флаг для бэкенда
       items: items.map(item => ({
         id: item.id,
         qty: item.qty,
@@ -398,27 +325,20 @@ const buildPackagesPayload = () => {
 };
 
 const sendOrder = async () => {
-  if (!pickupLocation.value) {
-    error.value = 'Выберите точку самовывоза';
-    return;
-  }
-  
+  if (!pickupLocation.value) return error.value = 'Выберите точку самовывоза';
   loading.value = true;
   error.value = '';
-  
   try {
     await api.post('/cart/validate', { packages: buildPackagesPayload() });
     await api.post('/orders', {
       pickup_location: pickupLocation.value,
       packages: buildPackagesPayload()
     });
-    
     cart.value = [];
     bouquetIds.value = [1];
     selectedPackaging.value = {};
     pickupLocation.value = '';
-    saveFullState();
-    
+    saveLocal();
     router.push('/profile');
     toast.success('Заказ успешно оформлен!');
   } catch (e) {
@@ -431,11 +351,8 @@ const sendOrder = async () => {
       showReplacementModal.value = true;
       return;
     }
-    if (e.response?.data?.errors) {
-      error.value = Object.values(e.response.data.errors).flat().join('\n');
-    } else {
-      error.value = e.response?.data?.error || e.response?.data?.message || 'Ошибка сервера';
-    }
+    if (e.response?.data?.errors) error.value = Object.values(e.response.data.errors).flat().join('\n');
+    else error.value = e.response?.data?.error || e.response?.data?.message || 'Ошибка сервера';
     toast.error(error.value);
   } finally {
     loading.value = false;
@@ -454,6 +371,7 @@ const applyReplacement = (originalId, newId, mode) => {
       item.id = suggestion.id;
       item.nazvanie = suggestion.nazvanie;
       item.price = suggestion.price;
+      item.image = suggestion.image_url || suggestion.img;
       toast.success(`Заменено на ${suggestion.nazvanie}`);
     }
   } else if (mode === 'reduce') {
@@ -466,28 +384,12 @@ const applyReplacement = (originalId, newId, mode) => {
     cart.value.splice(idx, 1);
     toast.info('Товар удалён из заказа');
   }
-  
-  saveFullState();
+  saveLocal();
   showReplacementModal.value = false;
 };
 
-// ===== 🆕 WATCH ДЛЯ АВТОСОХРАНЕНИЯ =====
-watch([cart, bouquetIds, selectedPackaging], () => {
-  saveFullState();
-}, { deep: true });
-
-// ===== MOUNTED =====
-onMounted(async () => {
-  await loadFromServer();
-  restoreFullState();
-  cleanupBouquetIds();
-  saveFullState();
-  
-  if (cart.value.length > 0 && bouquetIds.value.length === 0) {
-    const uniqueIds = [...new Set(cart.value.map(i => i.bouquet_id))];
-    bouquetIds.value = uniqueIds.length > 0 ? uniqueIds : [1];
-    saveFullState();
-  }
+onMounted(() => {
+  loadFromServer();
 });
 </script>
 
@@ -581,7 +483,8 @@ onMounted(async () => {
 
 .cart-item {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
   padding: 15px 0;
   border-bottom: 1px solid #eee;
 }
@@ -609,7 +512,7 @@ onMounted(async () => {
   background: transparent;
   cursor: pointer;
 }
-.item-total { font-weight: 700; font-size: 1.1rem; min-width: 80px;  }
+.item-total { font-weight: 700; font-size: 1.1rem; min-width: 80px; text-align: right; }
 .btn-remove { background: none; border: none; cursor: pointer; color: #ccc; font-size: 1.2rem; }
 .btn-remove:hover { color: var(--danger); }
 

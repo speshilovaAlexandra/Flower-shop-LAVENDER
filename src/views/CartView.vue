@@ -12,6 +12,7 @@
 
       <div v-else class="cart-content">
         <div class="bouquets-list">
+          <!-- 🔄 Цикл по явно управляемым ID сборок -->
           <div v-for="bid in bouquetIds" :key="bid" class="bouquet-group">
             <div class="bouquet-header">
               <div class="bouquet-title">🌸 Букет №{{ bid }}</div>
@@ -31,6 +32,7 @@
                 </div>
 
                 <div class="item-controls">
+                  <!-- 🆕 Селектор перемещения между сборками -->
                   <div class="bouquet-switcher">
                     <label>Сборка:</label>
                     <select v-model="item.bouquet_id" class="form-select-small" @change="saveCart">
@@ -107,115 +109,41 @@
       </div>
     </div>
 
-    <!-- 🌸 КРАСИВОЕ МОДАЛЬНОЕ ОКНО С УЧЕТОМ ТИПА ЗАКАЗА -->
+    <!-- 🆕 Модальное окно замены -->
     <transition name="modal-fade">
       <div v-if="showReplacementModal" class="modal-overlay" @click.self="showReplacementModal = false">
         <div class="replacement-modal">
-          <div class="modal-decoration"></div>
-          
           <div class="modal-header">
-            <div class="modal-icon">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 8v4M12 16h.01"/>
-              </svg>
-            </div>
-            <div class="header-text">
-              <h3>⚠️ Не хватает товара</h3>
-              <p>Некоторые позиции отсутствуют в нужном количестве</p>
-            </div>
-            <button @click="showReplacementModal = false" class="close-modal">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
+            <h3>⚠️ Не все товары в наличии</h3>
+            <button @click="showReplacementModal = false" class="btn-close">✕</button>
           </div>
-
           <div class="modal-body">
-            <div v-for="(s, idx) in shortages" :key="s.flower_id" class="shortage-item">
-              <div class="shortage-badge">{{ idx + 1 }}</div>
-              
-              <div class="shortage-content">
-                <div class="product-row">
-                  <div class="product-image" v-if="s.image">
-                    <img :src="s.image" :alt="s.name">
-                  </div>
-                  <div class="product-details">
-                    <h4>{{ s.name }}</h4>
-                    
-                    <!-- 🔥 Информация о наличии с учетом типа заказа -->
-                    <div class="stock-info">
-                      <span class="stock-label">📦 В наличии:</span>
-                      <span class="stock-value" :class="{ 'stock-low': s.available < (s.is_constructor ? 1 : 1) }">
-                        {{ s.available }} {{ s.measure_unit || (s.is_constructor ? 'шт.' : 'букет(ов)') }}
-                      </span>
-                    </div>
-                    
-                    <div class="stock-info">
-                      <span class="stock-label">🛒 Запрошено:</span>
-                      <span class="requested-value">{{ s.requested }} {{ s.measure_unit || (s.is_constructor ? 'шт.' : 'букет(ов)') }}</span>
-                    </div>
-                    
-                    <div class="missing-badge">
-                      <span>❌ Не хватает {{ s.missing }} {{ s.measure_unit || (s.is_constructor ? 'шт.' : 'букет(ов)') }}</span>
-                    </div>
-                    
-                    <!-- 🔥 Подсказка для каталога -->
-                    <div v-if="!s.is_constructor" class="hint-text">
-                      💡 Для 1 букета требуется 10 цветков
-                    </div>
-                  </div>
+            <div v-for="s in shortages" :key="s.flower_id" class="shortage-block">
+              <div class="shortage-item">
+                <img :src="s.image || '/images/placeholder.jpg'" class="item-thumb" alt="">
+                <div>
+                  <h4>{{ s.name }}</h4>
+                  <p>Запрошено: {{ s.requested }} шт. | В наличии: <strong>{{ s.available }} шт.</strong></p>
                 </div>
+              </div>
 
-                <div class="replacement-title">
-                  <span class="title-icon">✨</span>
-                  <span>Выберите вариант замены</span>
-                </div>
-
-                <div class="replacement-grid">
+              <div class="replacement-options">
+                <p class="option-title">Чем заменить недостающие {{ s.missing }} шт.?</p>
+                <div class="suggestion-grid">
                   <button v-for="opt in s.suggestions" :key="opt.id"
                           @click="applyReplacement(s.flower_id, opt.id, 'replace')"
-                          class="replacement-card replace-card">
-                    <span class="card-icon">🔄</span>
-                    <div class="card-info">
-                      <span class="card-name">{{ opt.nazvanie }}</span>
-                      <span class="card-price">{{ formatPrice(opt.price) }}</span>
-                    </div>
-                    <span class="card-arrow">→</span>
+                          class="btn-suggest">
+                    🔄 {{ opt.nazvanie }} ({{ opt.price }} ₽)
                   </button>
-                  
-                  <button @click="applyReplacement(s.flower_id, null, 'reduce')"
-                          class="replacement-card reduce-card">
-                    <span class="card-icon">📉</span>
-                    <div class="card-info">
-                      <span class="card-name">Уменьшить количество</span>
-                      <span class="card-hint">до {{ s.available }} {{ s.measure_unit || (s.is_constructor ? 'шт.' : 'букет(ов)') }}</span>
-                    </div>
-                    <span class="card-arrow">→</span>
+                  <button @click="applyReplacement(s.flower_id, null, 'reduce')" class="btn-reduce">
+                    📉 Оставить только {{ s.available }} шт.
                   </button>
-                  
-                  <button @click="applyReplacement(s.flower_id, null, 'remove')"
-                          class="replacement-card remove-card">
-                    <span class="card-icon">🗑</span>
-                    <div class="card-info">
-                      <span class="card-name">Удалить из заказа</span>
-                      <span class="card-hint">полностью</span>
-                    </div>
-                    <span class="card-arrow">→</span>
+                  <button @click="applyReplacement(s.flower_id, null, 'remove')" class="btn-remove-item">
+                    🗑 Убрать из заказа
                   </button>
                 </div>
               </div>
             </div>
-          </div>
-
-          <div class="modal-footer">
-            <button @click="showReplacementModal = false" class="btn-continue">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>Продолжить оформление</span>
-            </button>
           </div>
         </div>
       </div>
@@ -256,17 +184,13 @@ const pickupPoints = [
 const getItemsForBouquet = (bid) => cart.value.filter(i => i.bouquet_id === bid);
 const getPackagingPrice = (bid) => packagingOptions.find(p => p.value === (selectedPackaging.value[bid] || 'none'))?.price || 0;
 
-const totalItemsCount = computed(() => cart.value.reduce((acc, i) => acc + (i.qty || 0), 0));
-const totalGoodsPrice = computed(() => cart.value.reduce((sum, i) => sum + ((i.price || 0) * (i.qty || 0)), 0));
+const totalItemsCount = computed(() => cart.value.reduce((acc, i) => acc + i.qty, 0));
+const totalGoodsPrice = computed(() => cart.value.reduce((sum, i) => sum + (i.price * i.qty), 0));
 const totalPackagingPrice = computed(() => bouquetIds.value.reduce((sum, id) => sum + getPackagingPrice(id), 0));
 const grandTotal = computed(() => totalGoodsPrice.value + totalPackagingPrice.value);
 
-const formatPrice = (price) => {
-  if (!price && price !== 0) return '0 ₽';
-  return new Intl.NumberFormat('ru-RU').format(Math.round(price)) + ' ₽';
-};
+const formatPrice = (price) => new Intl.NumberFormat('ru-RU').format(price) + ' ₽';
 
-// ===== ОСНОВНЫЕ ФУНКЦИИ =====
 const changeQty = (item, delta) => {
   item.qty = Math.max(1, item.qty + delta);
   saveLocal();
@@ -302,27 +226,20 @@ const removeBouquetGroup = (bid) => {
   }
 };
 
-// 🔥 СБОРКА ПАКЕТОВ С ОПРЕДЕЛЕНИЕМ ТИПА ЗАКАЗА
-const buildPackagesPayload = () => {
-  return bouquetIds.value.map(bid => {
-    const items = cart.value.filter(i => i.bouquet_id === bid);
-    if (items.length === 0) return null;
-    
-    // 🔥 Определяем, из конструктора ли заказ
-    const isConstructor = items.some(item => item.type === 'constructor' || item.source?.includes('constructor'));
-    
-    return {
-      packaging: selectedPackaging.value[bid] || 'none',
-      packaging_price: getPackagingPrice(bid),
-      is_constructor: isConstructor, // 🔥 Флаг для бэкенда
-      items: items.map(item => ({
-        id: item.id,
-        qty: item.qty,
-        price: item.price
-      }))
-    };
-  }).filter(Boolean);
-};
+// ✅ ИСПРАВЛЕНО: теперь передаём price и packaging_price на бэкенд
+const buildPackagesPayload = () => bouquetIds.value.map(bid => {
+  const items = cart.value.filter(i => i.bouquet_id === bid);
+  if (items.length === 0) return null;
+  return {
+    packaging: selectedPackaging.value[bid] || 'none',
+    packaging_price: getPackagingPrice(bid), // 🆕 Цена упаковки для этой сборки
+    items: items.map(item => ({
+      id: item.id,
+      qty: item.qty,
+      price: item.price // 🆕 Фактическая цена из корзины (за стебель или за букет)
+    }))
+  };
+}).filter(Boolean);
 
 const sendOrder = async () => {
   if (!pickupLocation.value) return error.value = 'Выберите точку самовывоза';
@@ -394,7 +311,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ===== ОСНОВНЫЕ СТИЛИ КОРЗИНЫ ===== */
 .qty-input {
   width: 50px;
   text-align: center;
@@ -414,23 +330,47 @@ onMounted(() => {
   border-radius: 4px;
 }
 
+.replacement-modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  animation: modal-slide-up 0.3s ease-out;
+}
+.shortage-block { border-bottom: 1px solid #e5e7eb; padding: 16px 0; }
+.shortage-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.item-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; }
+.option-title { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; }
+.suggestion-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn-suggest, .btn-reduce, .btn-remove-item {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: 0.2s;
+}
+.btn-suggest:hover { background: #f3f0f7; border-color: var(--primary); }
+.btn-reduce:hover { background: #fef3c7; border-color: #d97706; }
+.btn-remove-item:hover { background: #fee2e2; border-color: #ef4444; }
+
 .bouquet-switcher { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
 .bouquet-switcher label { font-size: 0.85rem; color: var(--text-muted); }
 .form-select-small { padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px; background: #fff; font-size: 0.9rem; }
 .packaging-price { color: var(--text-muted); font-size: 0.9rem; margin-top: 5px; }
 
 :root {
-  --primary: #481C69;
-  --primary-light: #f3f0f7;
-  --primary-dark: #361550;
+  --primary: #1a1a1a;
   --accent: #D0C4C8;
   --bg-light: #f9f9f9;
-  --text-main: #1f2937;
-  --text-muted: #6b7280;
-  --border: #e5e7eb;
+  --text-main: #333;
+  --text-muted: #666;
+  --border: #e5e5e5;
   --danger: #ef4444;
-  --warning: #f59e0b;
-  --success: #10b981;
 }
 
 .cart-page {
@@ -512,6 +452,7 @@ onMounted(() => {
   background: transparent;
   cursor: pointer;
 }
+.qty-value { width: 40px; text-align: center; font-weight: 600; }
 .item-total { font-weight: 700; font-size: 1.1rem; min-width: 80px; text-align: right; }
 .btn-remove { background: none; border: none; cursor: pointer; color: #ccc; font-size: 1.2rem; }
 .btn-remove:hover { color: var(--danger); }
@@ -527,6 +468,8 @@ onMounted(() => {
   flex-wrap: wrap;
 }
 .bouquet-options label { font-weight: 600; font-size: 0.9rem; }
+.form-select-small { padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
+.packaging-price { color: var(--text-muted); font-size: 0.9rem; margin-left: auto; }
 
 .summary-section {
   flex: 0 0 400px;
@@ -574,730 +517,8 @@ onMounted(() => {
   margin-top: 15px;
 }
 
-/* ===== 🌸 КРАСИВОЕ МОДАЛЬНОЕ ОКНО ===== */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 20px;
-}
-
-.replacement-modal {
-  position: relative;
-  background: white;
-  border-radius: 32px;
-  width: 100%;
-  max-width: 680px;
-  max-height: 85vh;
-  overflow-y: auto;
-  box-shadow: 0 25px 50px -12px rgba(72, 28, 105, 0.3);
-  animation: modalSlideIn 0.4s cubic-bezier(0.21, 1.11, 0.35, 1);
-}
-
-@keyframes modalSlideIn {
-  from {
-    transform: translateY(30px) scale(0.96);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-
-.modal-decoration {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--primary), #9b59b6, var(--primary));
-  border-radius: 32px 32px 0 0;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 28px 28px 20px 28px;
-  border-bottom: 2px solid var(--primary-light);
-}
-
-.modal-icon {
-  width: 56px;
-  height: 56px;
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
-}
-
-.header-text {
-  flex: 1;
-}
-
-.header-text h3 {
-  margin: 0 0 4px;
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #92400e;
-}
-
-.header-text p {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #b45309;
-}
-
-.close-modal {
-  width: 36px;
-  height: 36px;
-  background: rgba(0, 0, 0, 0.08);
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.25s;
-  color: #92400e;
-}
-
-.close-modal:hover {
-  background: rgba(0, 0, 0, 0.15);
-  transform: rotate(90deg);
-}
-
-.modal-body {
-  padding: 20px 28px;
-  max-height: 55vh;
-  overflow-y: auto;
-}
-
-.shortage-item {
-  display: flex;
-  gap: 16px;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  margin-bottom: 20px;
-  overflow: hidden;
-  transition: all 0.25s;
-}
-
-.shortage-item:hover {
-  border-color: var(--primary-light);
-  box-shadow: 0 4px 12px rgba(72, 28, 105, 0.1);
-}
-
-.shortage-badge {
-  width: 36px;
-  background: linear-gradient(135deg, var(--primary), #7c3aed);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.1rem;
-}
-
-.shortage-content {
-  flex: 1;
-  padding: 16px 16px 16px 0;
-}
-
-.product-row {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.product-image {
-  width: 70px;
-  height: 70px;
-  border-radius: 16px;
-  overflow: hidden;
-  background: var(--primary-light);
-  flex-shrink: 0;
-}
-
-.product-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.product-details {
-  flex: 1;
-}
-
-.product-details h4 {
-  margin: 0 0 8px;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-.hint-text {
-  margin-top: 8px;
-  padding: 6px 12px;
-  background: #fef3c7;
-  border-radius: 8px;
-  font-size: 0.7rem;
-  color: #92400e;
-  display: inline-block;
-}
-
-.stock-info {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  font-size: 0.8rem;
-  margin-bottom: 4px;
-}
-
-.stock-label {
-  color: var(--text-muted);
-}
-
-.stock-value {
-  font-weight: 600;
-  color: var(--success);
-}
-
-.stock-value.stock-low {
-  color: var(--danger);
-}
-
-.requested-value {
-  font-weight: 600;
-  color: var(--text-main);
-}
-
-.missing-badge {
-  display: inline-flex;
-  background: #fee2e2;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--danger);
-  margin-top: 4px;
-}
-
-.replacement-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 16px 0 12px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-muted);
-}
-
-.title-icon {
-  font-size: 1rem;
-}
-
-.replacement-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.replacement-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 16px;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  cursor: pointer;
-  transition: all 0.25s;
-  width: 100%;
-  text-align: left;
-}
-
-.replacement-card:hover {
-  transform: translateX(6px);
-}
-
-.card-icon {
-  font-size: 1.2rem;
-  flex-shrink: 0;
-}
-
-.card-info {
-  flex: 1;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.card-name {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--text-main);
-}
-
-.card-price {
-  font-weight: 700;
-  font-size: 0.85rem;
-  color: var(--primary);
-}
-
-.card-hint {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-}
-
-.card-arrow {
-  color: var(--primary);
-  font-size: 1.1rem;
-  opacity: 0;
-  transition: opacity 0.25s, transform 0.25s;
-}
-
-.replacement-card:hover .card-arrow {
-  opacity: 1;
-  transform: translateX(4px);
-}
-
-.replace-card:hover {
-  background: var(--primary-light);
-  border-color: var(--primary);
-}
-
-.reduce-card:hover {
-  background: #fef3c7;
-  border-color: #f59e0b;
-}
-
-.reduce-card:hover .card-name {
-  color: #d97706;
-}
-
-.remove-card:hover {
-  background: #fee2e2;
-  border-color: var(--danger);
-}
-
-.remove-card:hover .card-name {
-  color: var(--danger);
-}
-
-.modal-footer {
-  padding: 20px 28px;
-  border-top: 1px solid var(--border);
-  background: var(--bg-light);
-  border-radius: 0 0 32px 32px;
-}
-
-.btn-continue {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, var(--primary), #7c3aed);
-  color: white;
-  border: none;
-  border-radius: 16px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: all 0.25s;
-}
-
-.btn-continue:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(72, 28, 105, 0.3);
-}
-
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
-}
-
-/* ===== АДАПТИВ ===== */
-@media (max-width: 1200px) {
-  .cart-page {
-    padding: 40px 20px;
-  }
-}
-
 @media (max-width: 991px) {
-  .cart-content {
-    flex-direction: column;
-    gap: 30px;
-  }
-  
-  .summary-section {
-    width: 100%;
-    position: static;
-    flex: 0 0 auto;
-    order: -1;
-  }
-  
-  .bouquet-options {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-  
-  .bouquet-switcher {
-    flex-wrap: wrap;
-  }
-}
-
-@media (max-width: 768px) {
-  .cart-page {
-    padding: 30px 15px;
-  }
-  
-  .page-title {
-    font-size: 2rem;
-    margin-bottom: 30px;
-  }
-  
-  .cart-item {
-    flex-direction: column;
-    gap: 15px;
-    padding: 15px 0;
-    align-items: stretch;
-  }
-  
-  .item-details {
-    width: 100%;
-  }
-  
-  .item-controls {
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 12px;
-    width: 100%;
-  }
-  
-  .bouquet-switcher {
-    width: 100%;
-    margin-bottom: 5px;
-  }
-  
-  .bouquet-switcher select {
-    flex: 1;
-    min-width: 120px;
-  }
-  
-  .qty-control {
-    order: 2;
-  }
-  
-  .item-actions {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    order: 3;
-    flex: 1;
-    justify-content: flex-end;
-  }
-  
-  .item-total {
-    min-width: 60px;
-  }
-  
-  .bouquet-header {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  
-  .bouquet-title {
-    font-size: 1.1rem;
-    flex: 1;
-  }
-  
-  .summary-section {
-    padding: 20px;
-  }
-  
-  .summary-row.total {
-    font-size: 1.1rem;
-  }
-  
-  .btn-checkout {
-    font-size: 1rem;
-    padding: 14px;
-  }
-  
-  .bouquet-options label {
-    width: 100%;
-  }
-  
-  .bouquet-options select {
-    width: 100%;
-  }
-  
-  .packaging-price {
-    width: 100%;
-    text-align: center;
-  }
-}
-
-@media (max-width: 480px) {
-  .cart-page {
-    padding: 20px 10px;
-  }
-  
-  .page-title {
-    font-size: 1.5rem;
-    margin-bottom: 20px;
-  }
-  
-  .bouquet-group {
-    margin-bottom: 25px;
-    padding-bottom: 15px;
-  }
-  
-  .bouquet-title {
-    font-size: 1rem;
-  }
-  
-  .item-details {
-    gap: 10px;
-  }
-  
-  .item-image-placeholder {
-    width: 45px;
-    height: 45px;
-    font-size: 0.9rem;
-  }
-  
-  .item-text h4 {
-    font-size: 0.95rem;
-    margin-bottom: 3px;
-  }
-  
-  .item-price {
-    font-size: 0.8rem;
-  }
-  
-  .item-controls {
-    gap: 8px;
-  }
-  
-  .qty-control {
-    height: 32px;
-  }
-  
-  .qty-control button {
-    width: 28px;
-    height: 28px;
-    font-size: 0.9rem;
-  }
-  
-  .qty-input {
-    width: 40px;
-    font-size: 0.9rem;
-  }
-  
-  .item-total {
-    font-size: 0.95rem;
-    min-width: 50px;
-  }
-  
-  .btn-remove {
-    font-size: 1rem;
-  }
-  
-  .btn-add-bouquet {
-    padding: 12px;
-    font-size: 0.9rem;
-  }
-  
-  .summary-section {
-    padding: 15px;
-  }
-  
-  .summary-section h3 {
-    font-size: 1.1rem;
-    margin-bottom: 15px;
-  }
-  
-  .summary-row {
-    font-size: 0.9rem;
-    margin-bottom: 8px;
-  }
-  
-  .summary-row.total {
-    font-size: 1rem;
-    margin-top: 15px;
-    padding-top: 15px;
-  }
-  
-  .pickup-section {
-    margin: 15px 0;
-  }
-  
-  .form-select {
-    padding: 10px;
-    font-size: 0.9rem;
-  }
-  
-  .error-msg {
-    font-size: 0.8rem;
-    padding: 10px;
-  }
-  
-  .replacement-modal {
-    max-width: 95%;
-    border-radius: 24px;
-  }
-  
-  .modal-header {
-    padding: 20px 20px 16px;
-    flex-wrap: wrap;
-  }
-  
-  .modal-icon {
-    width: 48px;
-    height: 48px;
-  }
-  
-  .modal-icon svg {
-    width: 24px;
-    height: 24px;
-  }
-  
-  .header-text h3 {
-    font-size: 1.1rem;
-  }
-  
-  .header-text p {
-    font-size: 0.75rem;
-  }
-  
-  .modal-body {
-    padding: 16px 20px;
-  }
-  
-  .shortage-item {
-    flex-direction: column;
-  }
-  
-  .shortage-badge {
-    width: 100%;
-    height: 28px;
-    font-size: 0.9rem;
-  }
-  
-  .shortage-content {
-    padding: 16px;
-  }
-  
-  .product-row {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-  
-  .product-image {
-    width: 80px;
-    height: 80px;
-  }
-  
-  .stock-info {
-    justify-content: center;
-  }
-  
-  .card-info {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .modal-footer {
-    padding: 16px 20px;
-  }
-  
-  .btn-continue {
-    padding: 12px;
-    font-size: 0.9rem;
-  }
-}
-
-@media (max-width: 360px) {
-  .item-controls {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-  
-  .item-actions {
-    justify-content: space-between;
-    width: 100%;
-  }
-  
-  .qty-control {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-@media (hover: none) and (max-width: 768px) {
-  .replacement-card:hover {
-    transform: none;
-  }
-  
-  .replacement-card:active {
-    transform: scale(0.98);
-  }
-  
-  .btn-checkout:active {
-    transform: scale(0.98);
-  }
-}
-
-@media (max-width: 768px) {
-  .modal-body {
-    max-height: 60vh;
-  }
-  
-  .shortage-item {
-    margin-bottom: 15px;
-  }
-}
-
-@media print {
-  .cart-page {
-    padding: 20px;
-  }
-  
-  .btn-checkout,
-  .btn-add-bouquet,
-  .btn-remove,
-  .btn-remove-bouquet,
-  .close-modal {
-    display: none !important;
-  }
+  .cart-content { flex-direction: column; }
+  .summary-section { width: 100%; position: static; }
 }
 </style>

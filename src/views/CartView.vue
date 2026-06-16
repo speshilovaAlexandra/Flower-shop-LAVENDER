@@ -248,14 +248,66 @@ const grandTotal = computed(() => totalGoodsPrice.value + totalPackagingPrice.va
 
 const formatPrice = (price) => new Intl.NumberFormat('ru-RU').format(price) + ' ₽';
 
+// ===== СОХРАНЕНИЕ ВСЕХ ДАННЫХ =====
+const saveFullState = () => {
+  saveLocal(); // Сохраняем корзину
+  localStorage.setItem('bouquetIds', JSON.stringify(bouquetIds.value));
+  localStorage.setItem('selectedPackaging', JSON.stringify(selectedPackaging.value));
+};
+
+const loadFullState = () => {
+  // Загружаем bouquetIds
+  const savedBouquetIds = localStorage.getItem('bouquetIds');
+  if (savedBouquetIds) {
+    try {
+      const parsed = JSON.parse(savedBouquetIds);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        bouquetIds.value = parsed;
+      }
+    } catch (e) {
+      console.warn('Ошибка загрузки bouquetIds:', e);
+    }
+  }
+
+  // Загружаем selectedPackaging
+  const savedPackaging = localStorage.getItem('selectedPackaging');
+  if (savedPackaging) {
+    try {
+      const parsed = JSON.parse(savedPackaging);
+      if (typeof parsed === 'object' && parsed !== null) {
+        selectedPackaging.value = parsed;
+      }
+    } catch (e) {
+      console.warn('Ошибка загрузки selectedPackaging:', e);
+    }
+  }
+};
+
+// Очистка неиспользуемых ID
+const cleanupBouquetIds = () => {
+  const usedIds = new Set(cart.value.map(i => i.bouquet_id));
+  bouquetIds.value = bouquetIds.value.filter(id => usedIds.has(id));
+  
+  // Удаляем пустые записи упаковки
+  Object.keys(selectedPackaging.value).forEach(key => {
+    if (!usedIds.has(Number(key))) {
+      delete selectedPackaging.value[key];
+    }
+  });
+};
+
+// ===== ОСНОВНЫЕ ФУНКЦИИ =====
 const changeQty = (item, delta) => {
   item.qty = Math.max(1, item.qty + delta);
-  saveLocal();
+  saveFullState();
 };
 
 const removeItem = (item) => {
   cart.value = cart.value.filter(i => i !== item);
-  saveLocal();
+  // Удаляем пустые букеты
+  const usedBouquetIds = new Set(cart.value.map(i => i.bouquet_id));
+  bouquetIds.value = bouquetIds.value.filter(id => usedBouquetIds.has(id));
+  saveFullState();
 };
 
 const onQtyChange = (item) => {
@@ -263,14 +315,14 @@ const onQtyChange = (item) => {
   if (isNaN(val) || val < 1) val = 1;
   if (val > 999) val = 999;
   item.qty = val;
-  saveLocal();
+  saveFullState();
 };
 
 const addNewBouquetGroup = () => {
   const newId = bouquetIds.value.length > 0 ? Math.max(...bouquetIds.value) + 1 : 1;
   bouquetIds.value.push(newId);
   selectedPackaging.value[newId] = 'none';
-  saveLocal();
+  saveFullState();
   toast.success(`Создана сборка №${newId}`);
 };
 
@@ -279,7 +331,7 @@ const removeBouquetGroup = (bid) => {
     bouquetIds.value = bouquetIds.value.filter(id => id !== bid);
     cart.value = cart.value.filter(i => i.bouquet_id !== bid);
     delete selectedPackaging.value[bid];
-    saveLocal();
+    saveFullState();
   }
 };
 
@@ -311,7 +363,7 @@ const sendOrder = async () => {
     bouquetIds.value = [1];
     selectedPackaging.value = {};
     pickupLocation.value = '';
-    saveLocal();
+    saveFullState();
     router.push('/profile');
     toast.success('Заказ успешно оформлен!');
   } catch (e) {
@@ -344,7 +396,6 @@ const applyReplacement = (originalId, newId, mode) => {
       item.id = suggestion.id;
       item.nazvanie = suggestion.nazvanie;
       item.price = suggestion.price;
-      //item.image = suggestion.image_url || suggestion.img;
       toast.success(`Заменено на ${suggestion.nazvanie}`);
     }
   } else if (mode === 'reduce') {
@@ -357,11 +408,13 @@ const applyReplacement = (originalId, newId, mode) => {
     cart.value.splice(idx, 1);
     toast.info('Товар удалён из заказа');
   }
-  saveLocal();
+  saveFullState();
   showReplacementModal.value = false;
 };
 
 onMounted(() => {
+  loadFullState();
+  cleanupBouquetIds();
   loadFromServer();
 });
 </script>
@@ -457,7 +510,6 @@ onMounted(() => {
 .cart-item {
   display: flex;
   justify-content: center;
-  /* align-items: center; */
   padding: 15px 0;
   border-bottom: 1px solid #eee;
 }
@@ -586,7 +638,6 @@ onMounted(() => {
   }
 }
 
-/* Декоративная полоска сверху */
 .modal-decoration {
   position: absolute;
   top: 0;
@@ -597,7 +648,6 @@ onMounted(() => {
   border-radius: 32px 32px 0 0;
 }
 
-/* Хедер модалки */
 .modal-header {
   display: flex;
   align-items: center;
@@ -655,14 +705,12 @@ onMounted(() => {
   transform: rotate(90deg);
 }
 
-/* Тело модалки */
 .modal-body {
   padding: 20px 28px;
   max-height: 55vh;
   overflow-y: auto;
 }
 
-/* Каждый товар с недостачей */
 .shortage-item {
   display: flex;
   gap: 16px;
@@ -695,7 +743,6 @@ onMounted(() => {
   padding: 16px 16px 16px 0;
 }
 
-/* Информация о товаре */
 .product-row {
   display: flex;
   gap: 16px;
@@ -768,7 +815,6 @@ onMounted(() => {
   color: var(--danger);
 }
 
-/* Заголовок замены */
 .replacement-title {
   display: flex;
   align-items: center;
@@ -785,7 +831,6 @@ onMounted(() => {
   font-size: 1rem;
 }
 
-/* Сетка вариантов замены */
 .replacement-grid {
   display: flex;
   flex-direction: column;
@@ -853,7 +898,6 @@ onMounted(() => {
   transform: translateX(4px);
 }
 
-/* Стили для разных типов карточек */
 .replace-card:hover {
   background: var(--primary-light);
   border-color: var(--primary);
@@ -877,7 +921,6 @@ onMounted(() => {
   color: var(--danger);
 }
 
-/* Футер модалки */
 .modal-footer {
   padding: 20px 28px;
   border-top: 1px solid var(--border);
@@ -907,7 +950,6 @@ onMounted(() => {
   box-shadow: 0 8px 20px rgba(72, 28, 105, 0.3);
 }
 
-/* Анимация появления */
 .modal-fade-enter-active,
 .modal-fade-leave-active {
   transition: opacity 0.3s ease;
@@ -918,13 +960,235 @@ onMounted(() => {
   opacity: 0;
 }
 
-/* Адаптив */
-@media (max-width: 991px) {
-  .cart-content { flex-direction: column; }
-  .summary-section { width: 100%; position: static; }
+/* ===== АДАПТИВ ===== */
+@media (max-width: 1200px) {
+  .cart-page {
+    padding: 40px 20px;
+  }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 991px) {
+  .cart-content {
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .summary-section {
+    width: 100%;
+    position: static;
+    flex: 0 0 auto;
+    order: -1;
+  }
+  
+  .bouquet-options {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .bouquet-switcher {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 768px) {
+  .cart-page {
+    padding: 30px 15px;
+  }
+  
+  .page-title {
+    font-size: 2rem;
+    margin-bottom: 30px;
+  }
+  
+  .cart-item {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px 0;
+    align-items: stretch;
+  }
+  
+  .item-details {
+    width: 100%;
+  }
+  
+  .item-controls {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+  }
+  
+  .bouquet-switcher {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+  
+  .bouquet-switcher select {
+    flex: 1;
+    min-width: 120px;
+  }
+  
+  .qty-control {
+    order: 2;
+  }
+  
+  .item-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    order: 3;
+    flex: 1;
+    justify-content: flex-end;
+  }
+  
+  .item-total {
+    min-width: 60px;
+  }
+  
+  .bouquet-header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .bouquet-title {
+    font-size: 1.1rem;
+    flex: 1;
+  }
+  
+  .summary-section {
+    padding: 20px;
+  }
+  
+  .summary-row.total {
+    font-size: 1.1rem;
+  }
+  
+  .btn-checkout {
+    font-size: 1rem;
+    padding: 14px;
+  }
+  
+  .bouquet-options label {
+    width: 100%;
+  }
+  
+  .bouquet-options select {
+    width: 100%;
+  }
+  
+  .packaging-price {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .cart-page {
+    padding: 20px 10px;
+  }
+  
+  .page-title {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+  }
+  
+  .bouquet-group {
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+  }
+  
+  .bouquet-title {
+    font-size: 1rem;
+  }
+  
+  .item-details {
+    gap: 10px;
+  }
+  
+  .item-image-placeholder {
+    width: 45px;
+    height: 45px;
+    font-size: 0.9rem;
+  }
+  
+  .item-text h4 {
+    font-size: 0.95rem;
+    margin-bottom: 3px;
+  }
+  
+  .item-price {
+    font-size: 0.8rem;
+  }
+  
+  .item-controls {
+    gap: 8px;
+  }
+  
+  .qty-control {
+    height: 32px;
+  }
+  
+  .qty-control button {
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+  }
+  
+  .qty-input {
+    width: 40px;
+    font-size: 0.9rem;
+  }
+  
+  .item-total {
+    font-size: 0.95rem;
+    min-width: 50px;
+  }
+  
+  .btn-remove {
+    font-size: 1rem;
+  }
+  
+  .btn-add-bouquet {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+  
+  .summary-section {
+    padding: 15px;
+  }
+  
+  .summary-section h3 {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+  }
+  
+  .summary-row {
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+  }
+  
+  .summary-row.total {
+    font-size: 1rem;
+    margin-top: 15px;
+    padding-top: 15px;
+  }
+  
+  .pickup-section {
+    margin: 15px 0;
+  }
+  
+  .form-select {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+  
+  .error-msg {
+    font-size: 0.8rem;
+    padding: 10px;
+  }
+  
+  /* Адаптив модального окна */
   .replacement-modal {
     max-width: 95%;
     border-radius: 24px;
@@ -1001,34 +1265,61 @@ onMounted(() => {
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 360px) {
+  .item-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .item-actions {
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  .qty-control {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Улучшения для touch устройств */
+@media (hover: none) and (max-width: 768px) {
+  .replacement-card:hover {
+    transform: none;
+  }
+  
+  .replacement-card:active {
+    transform: scale(0.98);
+  }
+  
+  .btn-checkout:active {
+    transform: scale(0.98);
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-body {
+    max-height: 60vh;
+  }
+  
+  .shortage-item {
+    margin-bottom: 15px;
+  }
+}
+
+@media print {
   .cart-page {
-    padding: 30px 15px;
+    padding: 20px;
   }
   
-  .page-title {
-    font-size: 1.8rem;
-    margin-bottom: 25px;
-  }
-  
-  .bouquet-title {
-    font-size: 1.1rem;
-  }
-  
-  .replacement-grid {
-    gap: 8px;
-  }
-  
-  .replacement-card {
-    padding: 10px 14px;
-  }
-  
-  .card-name {
-    font-size: 0.85rem;
-  }
-  
-  .card-price {
-    font-size: 0.8rem;
+  .btn-checkout,
+  .btn-add-bouquet,
+  .btn-remove,
+  .btn-remove-bouquet,
+  .close-modal {
+    display: none !important;
   }
 }
 </style>
+

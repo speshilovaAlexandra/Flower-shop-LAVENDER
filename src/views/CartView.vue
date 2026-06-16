@@ -311,6 +311,123 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ========================================= */
+/* БАЗОВЫЕ ИСПРАВЛЕНИЯ (Box-sizing и переносы) */
+/* ========================================= */
+.cart-page, .summary-section, .bouquet-group, .cart-item, .item-controls, .summary-row {
+  box-sizing: border-box; /* Критично: padding не будет увеличивать реальную ширину блоков */
+}
+
+.cart-page {
+  padding: 60px 40px;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  max-width: 1400px;
+  margin: 0 auto;
+  overflow-x: hidden; /* Убираем горизонтальный скролл, если что-то вылезло */
+}
+
+.container { max-width: 100%; }
+.page-title { font-size: 2.5rem; margin-bottom: 40px; color: var(--text-main); }
+
+/* ========================================= */
+/* СЕТКА КОРЗИНЫ И ПЛАШКИ ОФОРМЛЕНИЯ */
+/* ========================================= */
+.cart-content { 
+  display: flex; 
+  gap: 50px; 
+  align-items: flex-start; 
+  flex-wrap: wrap; /* 🆕 Позволяет блокам переноситься друг под друга, если не хватает места */
+}
+
+.bouquets-list { 
+  flex: 1 1 600px; /* 🆕 Задаем минимальную ширину, чтобы список не сжимался и не залезал под плашку */
+  min-width: 0; 
+}
+
+.summary-section {
+  flex: 0 0 400px;
+  background: var(--bg-light);
+  padding: 30px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  position: sticky;
+  top: 100px;
+  word-wrap: break-word; /* 🆕 Перенос очень длинных чисел/текста */
+  overflow-wrap: break-word;
+  max-width: 100%; /* 🆕 Гарантия, что блок не шире контейнера */
+}
+
+/* ========================================= */
+/* СТРОКИ С ЦЕНАМИ (ИТОГИ) */
+/* ========================================= */
+.summary-row { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; /* 🆕 Выравнивание по центру */
+  margin-bottom: 12px; 
+  color: var(--text-muted); 
+  gap: 15px; /* 🆕 Отступ между текстом и ценой */
+  flex-wrap: wrap; /* 🆕 Если цена не влезает, она перенесется на новую строку, а не вылезет за край */
+}
+
+.summary-row.total {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid var(--border);
+  color: var(--text-main);
+  font-weight: 700;
+  font-size: 1.3rem;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+/* ========================================= */
+/* ТОВАРЫ В КОРЗИНЕ */
+/* ========================================= */
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #eee;
+  flex-wrap: wrap; /* 🆕 Перенос элементов товара на мобильных */
+  gap: 15px;
+}
+
+.item-details { display: flex; align-items: center; gap: 15px; }
+.item-image-placeholder {
+  width: 60px;
+  height: 60px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #fff;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.item-text h4 { margin: 0 0 5px; font-size: 1.1rem; word-break: break-word; }
+.item-price { margin: 0; color: var(--text-muted); font-size: 0.9rem; }
+
+.item-controls { 
+  display: flex; 
+  align-items: center; 
+  gap: 20px; 
+  flex-wrap: wrap; /* 🆕 Кнопки и цена не будут накладываться друг на друга */
+}
+
+.qty-control { display: flex; align-items: center; background: #f5f5f5; border-radius: 6px; }
+.qty-control button {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
 .qty-input {
   width: 50px;
   text-align: center;
@@ -330,59 +447,75 @@ onMounted(() => {
   border-radius: 4px;
 }
 
-.replacement-modal {
-  background: white;
-  border-radius: 16px;
-  width: 100%;
-  max-width: 600px;
-  max-height: 85vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-  animation: modal-slide-up 0.3s ease-out;
+.item-actions { display: flex; align-items: center; gap: 15px; }
+
+.item-total { 
+  font-weight: 700; 
+  font-size: 1.1rem; 
+  min-width: 80px; 
+  text-align: right; 
+  white-space: nowrap; /* 🆕 Цена товара никогда не разорвется на две строки */
 }
-.shortage-block { border-bottom: 1px solid #e5e7eb; padding: 16px 0; }
-.shortage-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.item-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; }
-.option-title { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; }
-.suggestion-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-.btn-suggest, .btn-reduce, .btn-remove-item {
-  padding: 8px 12px;
+
+.btn-remove { background: none; border: none; cursor: pointer; color: #ccc; font-size: 1.2rem; }
+.btn-remove:hover { color: var(--danger); }
+
+/* ========================================= */
+/* УПАКОВКА И ПЕРЕКЛЮЧАТЕЛЬ СБОРОК */
+/* ========================================= */
+.bouquet-options {
+  margin-top: 15px;
+  padding: 15px;
+  background: #fafafa;
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
 }
-.btn-suggest:hover { background: #f3f0f7; border-color: var(--primary); }
-.btn-reduce:hover { background: #fef3c7; border-color: #d97706; }
-.btn-remove-item:hover { background: #fee2e2; border-color: #ef4444; }
+.bouquet-options label { font-weight: 600; font-size: 0.9rem; }
+.form-select-small { padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px; background: #fff; font-size: 0.9rem; }
+.packaging-price { color: var(--text-muted); font-size: 0.9rem; margin-left: auto; }
 
 .bouquet-switcher { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
 .bouquet-switcher label { font-size: 0.85rem; color: var(--text-muted); }
-.form-select-small { padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px; background: #fff; font-size: 0.9rem; }
-.packaging-price { color: var(--text-muted); font-size: 0.9rem; margin-top: 5px; }
 
-:root {
-  --primary: #1a1a1a;
-  --accent: #D0C4C8;
-  --bg-light: #f9f9f9;
-  --text-main: #333;
-  --text-muted: #666;
-  --border: #e5e5e5;
-  --danger: #ef4444;
+/* ========================================= */
+/* ОФОРМЛЕНИЕ ЗАКАЗА (КНОПКИ И АДРЕС) */
+/* ========================================= */
+.pickup-section { margin: 25px 0; }
+.pickup-section label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; }
+.form-select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; }
+
+.btn-checkout {
+  width: 100%;
+  padding: 16px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-checkout:disabled { background: #ccc; cursor: not-allowed; }
+
+.error-msg {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--danger);
+  background: #fee2e2;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-top: 15px;
+  word-break: break-word;
 }
 
-.cart-page {
-  padding: 60px 40px;
-  min-height: 100vh;
-  font-family: 'Inter', sans-serif;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-.container { max-width: 100%; }
-.page-title { font-size: 2.5rem; margin-bottom: 40px; color: var(--text-main); }
-
+/* ========================================= */
+/* ПУСТОЕ СОСТОЯНИЕ И ЗАГОЛОВКИ */
+/* ========================================= */
 .empty-state {
   text-align: center;
   padding: 100px 20px;
@@ -401,13 +534,12 @@ onMounted(() => {
   font-weight: 600;
 }
 
-.cart-content { display: flex; gap: 50px; align-items: flex-start; }
-.bouquets-list { flex: 1; min-width: 0; }
 .bouquet-group { margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px dashed var(--border); }
-.bouquet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.bouquet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 15px; flex-wrap: wrap;}
 .bouquet-title { font-size: 1.4rem; font-weight: 700; color: var(--text-main); }
 .btn-remove-bouquet { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #999; }
 .btn-remove-bouquet:hover { color: var(--danger); }
+
 .btn-add-bouquet {
   width: 100%;
   padding: 15px;
@@ -421,104 +553,256 @@ onMounted(() => {
 }
 .btn-add-bouquet:hover { border-color: var(--primary); color: var(--primary); }
 
-.cart-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 0;
-  border-bottom: 1px solid #eee;
-}
-.item-details { display: flex; align-items: center; gap: 15px; }
-.item-image-placeholder {
-  width: 60px;
-  height: 60px;
-  background: var(--accent);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  color: #fff;
-  font-size: 1.2rem;
-}
-.item-text h4 { margin: 0 0 5px; font-size: 1.1rem; }
-.item-price { margin: 0; color: var(--text-muted); font-size: 0.9rem; }
-.item-controls { display: flex; align-items: center; gap: 20px; }
-.qty-control { display: flex; align-items: center; background: #f5f5f5; border-radius: 6px; }
-.qty-control button {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-}
-.qty-value { width: 40px; text-align: center; font-weight: 600; }
-.item-total { font-weight: 700; font-size: 1.1rem; min-width: 80px; text-align: right; }
-.btn-remove { background: none; border: none; cursor: pointer; color: #ccc; font-size: 1.2rem; }
-.btn-remove:hover { color: var(--danger); }
-
-.bouquet-options {
-  margin-top: 15px;
-  padding: 15px;
-  background: #fafafa;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  flex-wrap: wrap;
-}
-.bouquet-options label { font-weight: 600; font-size: 0.9rem; }
-.form-select-small { padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
-.packaging-price { color: var(--text-muted); font-size: 0.9rem; margin-left: auto; }
-
-.summary-section {
-  flex: 0 0 400px;
-  background: var(--bg-light);
-  padding: 30px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  position: sticky;
-  top: 100px;
-}
-.summary-section h3 { margin-top: 0; margin-bottom: 25px; font-size: 1.3rem; }
-.summary-row { display: flex; justify-content: space-between; margin-bottom: 12px; color: var(--text-muted); }
-.summary-row.total {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 2px solid var(--border);
-  color: var(--text-main);
-  font-weight: 700;
-  font-size: 1.3rem;
-}
-.pickup-section { margin: 25px 0; }
-.pickup-section label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; }
-.form-select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; }
-.btn-checkout {
+/* ========================================= */
+/* МОДАЛЬНОЕ ОКНО ЗАМЕН */
+/* ========================================= */
+.replacement-modal {
+  background: white;
+  border-radius: 16px;
   width: 100%;
-  padding: 16px;
-  background: var(--primary);
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  animation: modal-slide-up 0.3s ease-out;
 }
-.btn-checkout:disabled { background: #ccc; cursor: not-allowed; }
-.error-msg {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--danger);
-  background: #fee2e2;
-  padding: 12px;
+.shortage-block { border-bottom: 1px solid #e5e7eb; padding: 16px 0; }
+.shortage-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.item-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; }
+.option-title { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; }
+.suggestion-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn-suggest, .btn-reduce, .btn-remove-item {
+  padding: 8px 12px;
   border-radius: 8px;
-  font-size: 0.9rem;
-  margin-top: 15px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: 0.2s;
+}
+.btn-suggest:hover { background: #f3f0f7; border-color: var(--primary); }
+.btn-reduce:hover { background: #fef3c7; border-color: #d97706; }
+.btn-remove-item:hover { background: #fee2e2; border-color: #ef4444; }
+
+/* ========================================= */
+/* ПЕРЕМЕННЫЕ И АДАПТИВ */
+/* ========================================= */
+:root {
+  --primary: #1a1a1a;
+  --accent: #D0C4C8;
+  --bg-light: #f9f9f9;
+  --text-main: #333;
+  --text-muted: #666;
+  --border: #e5e5e5;
+  --danger: #ef4444;
 }
 
-@media (max-width: 991px) {
-  .cart-content { flex-direction: column; }
-  .summary-section { width: 100%; position: static; }
+/* 🆕 ПЛАНШЕТЫ И МОБИЛЬНЫЕ УСТРОЙСТВА */
+@media (max-width: 1100px) {
+  .cart-content {
+    flex-direction: column;
+  }
+  .summary-section {
+    width: 100%;
+    flex: 1 1 auto;
+    position: static; /* Убираем "прилипание", чтобы плашка не перекрывала список товаров */
+  }
+  .bouquets-list {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .cart-page { padding: 40px 20px; }
+  .page-title { font-size: 2rem; }
+  .cart-content { gap: 30px; }
+  .item-controls { gap: 15px; }
+}
+
+@media (max-width: 576px) {
+  .cart-page { padding: 30px 15px; }
+  .page-title { font-size: 1.6rem; margin-bottom: 25px; }
+  .summary-section { padding: 20px; }
+  .summary-row.total { font-size: 1.1rem; }
+  .item-details { gap: 10px; }
+  .item-image-placeholder { width: 50px; height: 50px; font-size: 1rem; }
+  .item-text h4 { font-size: 1rem; }
+}
+  @media (max-width: 368px) {
+  .cart-page {
+    padding: 20px 10px; /* Минимальные боковые отступы */
+  }
+
+  .page-title {
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+  }
+
+  .cart-content {
+    gap: 20px;
+  }
+
+  /* 📦 ПЛАШКА ИТОГОВ */
+  .summary-section {
+    padding: 15px;
+  }
+  .summary-section h3 {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+  }
+  .summary-row {
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    gap: 10px;
+  }
+  .summary-row.total {
+    font-size: 1.1rem;
+    margin-top: 15px;
+    padding-top: 15px;
+  }
+
+  /* 🛒 ТОВАРЫ В КОРЗИНЕ (перестраиваем в столбик) */
+  .cart-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 0;
+  }
+
+  .item-details {
+    width: 100%;
+    gap: 10px;
+  }
+
+  .item-image-placeholder {
+    width: 45px;
+    height: 45px;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .item-text h4 {
+    font-size: 0.95rem;
+    line-height: 1.2;
+  }
+  
+  .item-price {
+    font-size: 0.8rem;
+  }
+
+  /* 🎛 БЛОК УПРАВЛЕНИЯ (кнопки, количество, цена) */
+  .item-controls {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .bouquet-switcher {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .bouquet-switcher select {
+    flex: 1;
+    margin-left: 10px;
+  }
+
+  .qty-control {
+    width: 100%;
+    justify-content: center;
+  }
+  .qty-control button {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+  .qty-input {
+    flex: 1;
+    font-size: 1.1rem;
+  }
+
+  .item-actions {
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .item-total {
+    font-size: 1rem;
+    min-width: auto;
+  }
+
+  .btn-remove {
+    font-size: 1.3rem;
+    padding: 5px;
+  }
+
+  /* 🎁 УПАКОВКА */
+  .bouquet-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+  }
+  .bouquet-options label {
+    font-size: 0.85rem;
+  }
+  .bouquet-options select {
+    width: 100%;
+  }
+  .packaging-price {
+    margin-left: 0;
+    width: 100%;
+    text-align: right;
+    font-size: 0.85rem;
+  }
+
+  /* 🔘 КНОПКИ И ЗАГОЛОВКИ */
+  .bouquet-title {
+    font-size: 1.1rem;
+  }
+
+  .btn-add-bouquet {
+    padding: 12px;
+    font-size: 0.85rem;
+  }
+
+  .pickup-section label {
+    font-size: 0.85rem;
+  }
+  
+  .form-select {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .btn-checkout {
+    padding: 14px;
+    font-size: 1rem;
+  }
+
+  /* ⚠️ МОДАЛКА ЗАМЕН */
+  .replacement-modal {
+    max-height: 90vh;
+    border-radius: 12px;
+  }
+  .modal-header {
+    padding: 15px;
+  }
+  .modal-header h3 {
+    font-size: 1.1rem;
+  }
+  .modal-body {
+    padding: 15px;
+  }
+  .suggestion-grid {
+    flex-direction: column;
+  }
+  .btn-suggest, .btn-reduce, .btn-remove-item {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+  }
 }
 </style>

@@ -217,16 +217,7 @@ import { useCart } from '@/composables/useCart';
 
 const router = useRouter();
 const toast = useToastStore();
-
-// ===== ИСПОЛЬЗУЕМ useCart ДЛЯ УПРАВЛЕНИЯ СОСТОЯНИЕМ =====
-const { 
-  cart, 
-  bouquetIds, 
-  selectedPackaging, 
-  saveCart, 
-  loadFromServer,
-  isAuthenticated 
-} = useCart();
+const { cart, bouquetIds, selectedPackaging, saveLocal, loadFromServer } = useCart();
 
 const showReplacementModal = ref(false);
 const shortages = ref([]);
@@ -247,118 +238,79 @@ const pickupPoints = [
   'г. Пермь, ул. Космонавтов, 110 (Индустриальный)'
 ];
 
-// ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
-const getItemsForBouquet = (bid) => {
-  return cart.value.filter(i => i.bouquet_id === bid);
-};
+const getItemsForBouquet = (bid) => cart.value.filter(i => i.bouquet_id === bid);
+const getPackagingPrice = (bid) => packagingOptions.find(p => p.value === (selectedPackaging.value[bid] || 'none'))?.price || 0;
 
-const getPackagingPrice = (bid) => {
-  return packagingOptions.find(p => p.value === (selectedPackaging.value[bid] || 'none'))?.price || 0;
-};
-
-// ===== ВЫЧИСЛЯЕМЫЕ СВОЙСТВА =====
-const totalItemsCount = computed(() => {
-  return cart.value.reduce((acc, i) => acc + i.qty, 0);
-});
-
-const totalGoodsPrice = computed(() => {
-  return cart.value.reduce((sum, i) => sum + (i.price * i.qty), 0);
-});
-
-const totalPackagingPrice = computed(() => {
-  return bouquetIds.value.reduce((sum, id) => sum + getPackagingPrice(id), 0);
-});
-
-const grandTotal = computed(() => {
-  return totalGoodsPrice.value + totalPackagingPrice.value;
-});
+const totalItemsCount = computed(() => cart.value.reduce((acc, i) => acc + (i.qty || 0), 0));
+const totalGoodsPrice = computed(() => cart.value.reduce((sum, i) => sum + ((i.price || 0) * (i.qty || 0)), 0));
+const totalPackagingPrice = computed(() => bouquetIds.value.reduce((sum, id) => sum + getPackagingPrice(id), 0));
+const grandTotal = computed(() => totalGoodsPrice.value + totalPackagingPrice.value);
 
 const formatPrice = (price) => {
   if (!price && price !== 0) return '0 ₽';
   return new Intl.NumberFormat('ru-RU').format(Math.round(price)) + ' ₽';
 };
 
-// ===== СОХРАНЕНИЕ ВСЕХ ДАННЫХ =====
+// ===== 🆕 СОХРАНЕНИЕ ВСЕХ ДАННЫХ =====
 const saveFullState = () => {
-  // Сохраняем через useCart
-  saveCart();
+  // 1. Сохраняем через saveLocal (из useCart)
+  saveLocal();
   
-  // Дополнительно сохраняем в localStorage для надежности
+  // 2. Дополнительно сохраняем bouquetIds и packaging в localStorage
   try {
-    localStorage.setItem('cart_items', JSON.stringify(cart.value));
     localStorage.setItem('cart_bouquet_ids', JSON.stringify(bouquetIds.value));
     localStorage.setItem('cart_packaging', JSON.stringify(selectedPackaging.value));
   } catch (e) {
-    console.warn('Ошибка сохранения в localStorage:', e);
+    console.warn('Ошибка сохранения дополнительных данных:', e);
   }
 };
 
-const loadFullState = () => {
-  // Пытаемся загрузить из localStorage
+// ===== 🆕 ВОССТАНОВЛЕНИЕ ДАННЫХ =====
+const restoreFullState = () => {
   try {
-    const savedItems = localStorage.getItem('cart_items');
+    // Восстанавливаем bouquetIds
     const savedIds = localStorage.getItem('cart_bouquet_ids');
-    const savedPackaging = localStorage.getItem('cart_packaging');
-    
-    if (savedItems) {
-      const parsed = JSON.parse(savedItems);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        cart.value = parsed;
-      }
-    }
-    
     if (savedIds) {
       const parsed = JSON.parse(savedIds);
       if (Array.isArray(parsed) && parsed.length > 0) {
         bouquetIds.value = parsed;
-      } else if (cart.value.length > 0) {
-        // Если есть товары, но нет ID - создаем ID
-        const uniqueIds = [...new Set(cart.value.map(i => i.bouquet_id))];
-        bouquetIds.value = uniqueIds.length > 0 ? uniqueIds : [1];
       }
-    } else if (cart.value.length > 0) {
-      // Если нет ID, но есть товары - создаем
-      const uniqueIds = [...new Set(cart.value.map(i => i.bouquet_id))];
-      bouquetIds.value = uniqueIds.length > 0 ? uniqueIds : [1];
     }
     
+    // Восстанавливаем packaging
+    const savedPackaging = localStorage.getItem('cart_packaging');
     if (savedPackaging) {
       const parsed = JSON.parse(savedPackaging);
       if (typeof parsed === 'object' && parsed !== null) {
         selectedPackaging.value = parsed;
       }
     }
+    
+    // Если есть товары, но нет ID - создаем
+    if (cart.value.length > 0 && bouquetIds.value.length === 0) {
+      const uniqueIds = [...new Set(cart.value.map(i => i.bouquet_id))];
+      bouquetIds.value = uniqueIds.length > 0 ? uniqueIds : [1];
+    }
+    
+    // Очищаем неиспользуемые ID
+    cleanupBouquetIds();
+    
   } catch (e) {
-    console.warn('Ошибка загрузки из localStorage:', e);
+    console.warn('Ошибка восстановления данных:', e);
   }
-  
-  // Если корзина пуста, но есть ID - очищаем ID
-  if (cart.value.length === 0 && bouquetIds.value.length > 0) {
-    bouquetIds.value = [1];
-  }
-  
-  // Если есть товары, но нет ID - создаем
-  if (cart.value.length > 0 && bouquetIds.value.length === 0) {
-    const uniqueIds = [...new Set(cart.value.map(i => i.bouquet_id))];
-    bouquetIds.value = uniqueIds.length > 0 ? uniqueIds : [1];
-  }
-  
-  // Очищаем неиспользуемые ID
-  cleanupBouquetIds();
 };
 
-// Очистка неиспользуемых ID
+// ===== 🆕 ОЧИСТКА НЕИСПОЛЬЗУЕМЫХ ID =====
 const cleanupBouquetIds = () => {
   if (cart.value.length === 0) {
     bouquetIds.value = [1];
+    selectedPackaging.value = {};
     return;
   }
   
   const usedIds = new Set(cart.value.map(i => i.bouquet_id));
-  // Фильтруем только те ID, которые есть в корзине
   const validIds = bouquetIds.value.filter(id => usedIds.has(id));
   
-  // Если все ID невалидны - создаем новый
   if (validIds.length === 0) {
     const firstBouquetId = cart.value[0]?.bouquet_id || 1;
     bouquetIds.value = [firstBouquetId];
@@ -381,7 +333,7 @@ const cleanupBouquetIds = () => {
 
 // ===== ОСНОВНЫЕ ФУНКЦИИ =====
 const changeQty = (item, delta) => {
-  const newQty = item.qty + delta;
+  const newQty = (item.qty || 0) + delta;
   if (newQty < 1) return;
   item.qty = newQty;
   saveFullState();
@@ -389,7 +341,6 @@ const changeQty = (item, delta) => {
 
 const removeItem = (item) => {
   cart.value = cart.value.filter(i => i !== item);
-  // Удаляем пустые букеты
   cleanupBouquetIds();
   saveFullState();
   toast.info('Товар удалён из корзины');
@@ -453,7 +404,6 @@ const sendOrder = async () => {
       packages: buildPackagesPayload()
     });
     
-    // Очищаем корзину после успешного заказа
     cart.value = [];
     bouquetIds.value = [1];
     selectedPackaging.value = {};
@@ -512,25 +462,31 @@ const applyReplacement = (originalId, newId, mode) => {
   showReplacementModal.value = false;
 };
 
-// ===== WATCH ДЛЯ АВТОСОХРАНЕНИЯ =====
+// ===== 🆕 WATCH ДЛЯ АВТОСОХРАНЕНИЯ =====
 watch([cart, bouquetIds, selectedPackaging], () => {
   saveFullState();
 }, { deep: true });
 
 // ===== MOUNTED =====
 onMounted(async () => {
-  // Сначала загружаем из localStorage
-  loadFullState();
+  // 1. Загружаем корзину с сервера или из localStorage
+  await loadFromServer();
   
-  // Затем синхронизируем с сервером (если авторизован)
-  if (isAuthenticated) {
-    await loadFromServer();
-    // После загрузки с сервера - пересохраняем локально
+  // 2. Восстанавливаем bouquetIds и packaging из localStorage
+  restoreFullState();
+  
+  // 3. Очищаем неиспользуемые ID
+  cleanupBouquetIds();
+  
+  // 4. Финальное сохранение
+  saveFullState();
+  
+  // 5. Если есть товары, но нет ID - создаем
+  if (cart.value.length > 0 && bouquetIds.value.length === 0) {
+    const uniqueIds = [...new Set(cart.value.map(i => i.bouquet_id))];
+    bouquetIds.value = uniqueIds.length > 0 ? uniqueIds : [1];
     saveFullState();
   }
-  
-  // Финальная очистка
-  cleanupBouquetIds();
 });
 </script>
 

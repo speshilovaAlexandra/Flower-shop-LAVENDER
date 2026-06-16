@@ -376,9 +376,15 @@ const buildPackagesPayload = () => {
   return bouquetIds.value.map(bid => {
     const items = cart.value.filter(i => i.bouquet_id === bid);
     if (items.length === 0) return null;
+    
+    // 🔥 Определяем, из конструктора ли заказ
+    // Проверяем, есть ли у товаров тип 'constructor'
+    const isConstructor = items.some(item => item.type === 'constructor' || item.source?.includes('constructor'));
+    
     return {
       packaging: selectedPackaging.value[bid] || 'none',
       packaging_price: getPackagingPrice(bid),
+      is_constructor: isConstructor, // 🔥 Флаг для бэкенда
       items: items.map(item => ({
         id: item.id,
         qty: item.qty,

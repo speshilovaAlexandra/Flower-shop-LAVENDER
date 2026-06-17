@@ -173,7 +173,6 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  /* Убрал align-items: center, чтобы футер и хедер были на всю ширину */
   align-items: stretch; 
 }
 
@@ -198,7 +197,7 @@ body {
   border-bottom: 1px solid transparent;
   transition: all 0.3s ease;
   padding: 15px 0;
-  width: 100%; /* ИСПРАВЛЕНО: было 1750px */
+  width: 100%;
 }
 
 .site-header.scrolled {
@@ -212,7 +211,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap; /* Позволяет перенос на очень узких экранах */
+  flex-wrap: wrap;
   gap: 15px;
 }
 
@@ -227,7 +226,7 @@ body {
   font-size: 1.5rem;
   letter-spacing: -0.02em;
   transition: opacity 0.2s;
-  flex-shrink: 0; /* Лого не сжимается */
+  flex-shrink: 0;
 }
 
 .logo-wrapper:hover {
@@ -243,7 +242,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap; /* Разрешаем перенос ссылок */
+  flex-wrap: wrap;
   justify-content: flex-end;
 }
 
@@ -300,26 +299,34 @@ body {
   padding: 60px 0 20px;
   font-family: 'Inter', system-ui, sans-serif;
   margin-top: auto;
-  width: 100%; /* ИСПРАВЛЕНО: было 1750px */
+  width: 100%;
   background: var(--white);
+}
+
+/* 🆕 Центрирование футера */
+.site-footer .container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* Guarantees Section */
 .guarantees-section {
-  display: flex; /* БЫЛО: grid */
+  display: flex;
   flex-wrap: wrap;
   gap: 30px;
   margin-bottom: 40px;
-  justify-content: space-between;
+  justify-content: center; /* 🆕 Центрируем */
+  width: 100%;
 }
 
 .guarantee-item {
   display: flex;
   align-items: flex-start;
   gap: 15px;
-  /* Адаптивная ширина для флексов */
-  flex: 1 1 200px; 
+  flex: 1 1 200px;
   max-width: 350px;
+  justify-content: center; /* 🆕 Центрируем контент внутри */
 }
 
 .icon-box {
@@ -352,27 +359,33 @@ body {
   height: 1px;
   background: var(--border);
   margin: 40px 0;
+  width: 100%;
 }
 
 /* Footer Content */
 .footer-content {
-  display: flex; /* БЫЛО: grid */
+  display: flex;
   flex-wrap: wrap;
   gap: 40px;
   margin-bottom: 40px;
-  justify-content: space-between;
+  justify-content: center; /* 🆕 Центрируем колонки */
+  width: 100%;
 }
 
 /* Колонки футера */
 .footer-col {
-  flex: 1 1 300px; /* Базовая ширина 300px, могут сжиматься */
+  flex: 1 1 300px;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  align-items: center; /* 🆕 Центрируем содержимое колонок */
+  text-align: center; /* 🆕 Текст по центру */
 }
 
-/* Первая колонка чуть шире на десктопе */
-.footer-col:first-child {
-  flex: 1.5 1 300px;
+/* 🆕 Контакты в одну строку на десктопе */
+.footer-col:last-child .contact-list {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .logo-text {
@@ -388,11 +401,13 @@ body {
   font-size: 0.95rem;
   line-height: 1.6;
   margin-bottom: 20px;
+  text-align: center;
 }
 
 .social-links {
   display: flex;
   gap: 10px;
+  justify-content: center;
 }
 
 .social-icon {
@@ -427,8 +442,9 @@ h4 {
   padding: 0;
   margin: 0;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 12px;
+  align-items: center;
 }
 
 .footer-links a {
@@ -464,13 +480,14 @@ h4 {
   border-top: 1px solid var(--border);
   color: var(--text-muted);
   font-size: 0.9rem;
+  width: 100%;
 }
 
 /* ========================================= */
 /* 4. ADAPTIVE BREAKPOINTS                   */
 /* ========================================= */
 
-/* 2. Планшет - 991px и меньше */
+/* Планшет - 991px и меньше */
 @media (max-width: 991px) {
   .container {
     max-width: 100%;
@@ -486,22 +503,26 @@ h4 {
   }
 
   .guarantee-item {
-    flex: 1 1 45%; /* 2 в ряд */
+    flex: 1 1 45%;
   }
   
   .footer-col {
-    flex: 1 1 45%; /* 2 колонки в ряд */
+    flex: 1 1 45%;
+  }
+  
+  .footer-col:last-child .contact-list {
+    flex-direction: column;
   }
 }
 
-/* 3. Мобильный телефон в горизонтальном режиме - 767px и меньше */
+/* Мобильный телефон - 767px и меньше */
 @media (max-width: 767px) {
   .container {
     padding: 0 20px;
   }
 
   .header-content {
-    justify-content: center; /* Центрируем на мобильных */
+    justify-content: center;
     flex-direction: column;
     gap: 15px;
   }
@@ -525,8 +546,9 @@ h4 {
   }
 
   .guarantee-item {
-    flex: 1 1 100%; /* 1 в ряд на узких экранах */
+    flex: 1 1 100%;
     max-width: 100%;
+    justify-content: flex-start;
   }
 
   .footer-content {
@@ -534,11 +556,15 @@ h4 {
   }
 
   .footer-col {
-    flex: 1 1 100%; /* Все колонки друг под другом */
+    flex: 1 1 100%;
+  }
+  
+  .footer-col:last-child .contact-list {
+    flex-direction: column;
   }
 }
 
-/* 4. Мобильный телефон в портретном режиме - 479px и меньше */
+/* Мобильный телефон - 479px и меньше */
 @media (max-width: 479px) {
   .site-header {
     padding: 10px 0;
@@ -553,7 +579,6 @@ h4 {
   }
 
   .main-nav {
-    /* Горизонтальный скролл для меню на очень узких экранах */
     overflow-x: auto;
     width: 100%;
     justify-content: flex-start;
@@ -568,6 +593,8 @@ h4 {
   .nav-link {
     white-space: nowrap;
     flex-shrink: 0;
+    font-size: 0.85rem;
+    padding: 6px 10px;
   }
 
   .site-footer {
@@ -593,6 +620,208 @@ h4 {
 
   .footer-bottom {
     font-size: 0.8rem;
+  }
+}
+
+/* ========================================= */
+/* 🆕 5. ЭКСТРА МАЛЕНЬКИЙ ЭКРАН - 368px      */
+/* ========================================= */
+@media (max-width: 368px) {
+  /* Контейнер */
+  .container {
+    padding: 0 12px;
+  }
+
+  /* Хедер */
+  .site-header {
+    padding: 8px 0;
+  }
+  
+  .site-header.scrolled {
+    padding: 6px 0;
+  }
+
+  .header-content {
+    gap: 10px;
+  }
+
+  .logo-wrapper {
+    font-size: 1rem;
+  }
+  
+  .logo-icon {
+    font-size: 1.2rem;
+  }
+  
+  .logo-text {
+    font-size: 0.9rem;
+  }
+
+  .main-nav {
+    gap: 4px;
+    padding-bottom: 3px;
+  }
+
+  .nav-link {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    gap: 4px;
+  }
+  
+  .nav-link svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .btn-logout {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+
+  /* Футер */
+  .site-footer {
+    padding: 30px 0 15px;
+  }
+  
+  .site-footer .container {
+    padding: 0 12px;
+  }
+
+  .guarantees-section {
+    gap: 15px;
+    margin-bottom: 25px;
+  }
+
+  .guarantee-item {
+    flex: 1 1 100%;
+    max-width: 100%;
+    gap: 10px;
+    align-items: center;
+    text-align: center;
+    flex-direction: column;
+  }
+
+  .icon-box {
+    width: 40px;
+    height: 40px;
+    font-size: 1.5rem;
+  }
+
+  .text h4 {
+    font-size: 0.85rem;
+    margin: 0 0 3px;
+  }
+
+  .text p {
+    font-size: 0.75rem;
+  }
+
+  .footer-divider {
+    margin: 25px 0;
+  }
+
+  .footer-content {
+    gap: 20px;
+    margin-bottom: 25px;
+  }
+
+  .footer-col {
+    flex: 1 1 100%;
+    padding: 0;
+  }
+
+  .logo-text {
+    font-size: 1.1rem;
+    margin: 0 0 10px;
+  }
+
+  .description {
+    font-size: 0.75rem;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+
+  .social-links {
+    gap: 6px;
+  }
+
+  .social-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.65rem;
+  }
+
+  h4 {
+    font-size: 0.85rem;
+    margin: 0 0 10px;
+  }
+
+  .footer-links, .contact-list {
+    gap: 6px;
+  }
+  
+  .footer-links a, .contact-link {
+    font-size: 0.75rem;
+    gap: 6px;
+  }
+
+  .contact-link .icon {
+    font-size: 0.9rem;
+  }
+
+  .footer-bottom {
+    font-size: 0.65rem;
+    padding-top: 12px;
+  }
+  
+  .footer-bottom p {
+    margin: 0;
+  }
+
+  /* Корзина в хедере */
+  .cart-icon-wrapper {
+    position: relative;
+  }
+  
+  .cart-badge {
+    font-size: 0.6rem;
+    padding: 1px 5px;
+    min-width: 16px;
+    height: 16px;
+  }
+}
+
+/* 🆕 Дополнительные улучшения для очень маленьких экранов */
+@media (max-width: 320px) {
+  .container {
+    padding: 0 8px;
+  }
+  
+  .nav-link {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+  }
+  
+  .logo-wrapper {
+    font-size: 0.85rem;
+  }
+  
+  .guarantee-item {
+    gap: 8px;
+  }
+  
+  .icon-box {
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
+  }
+  
+  .text h4 {
+    font-size: 0.75rem;
+  }
+  
+  .text p {
+    font-size: 0.65rem;
   }
 }
 </style>

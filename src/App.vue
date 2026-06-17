@@ -304,11 +304,11 @@ body {
 }
 
 /* 🆕 Центрирование футера */
-.site-footer .container {
+/* .site-footer .container {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
+} */
 
 /* Guarantees Section */
 .guarantees-section {

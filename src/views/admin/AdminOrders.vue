@@ -23,10 +23,32 @@
                <td><div class="cell-main">{{ order.user?.name || 'Неизвестно' }}</div></td>
                <td><span class="price-tag">{{ formatPrice(order.total_price) }}</span></td>
                <td>
-                 <select v-model="order.status" @change="updateStatus(order)" :class="'status-select status-' + order.status">
-                   <option value="pending">Ожидает</option><option value="confirmed">Готов к выдаче</option>
-                   <option value="completed">Завершен</option><option value="canceled">Отменен</option>
-                 </select>
+                 <div class="status-dropdown">
+                   <button 
+                     class="status-btn" 
+                     :class="'status-' + order.status"
+                     @click="toggleDropdown(order.id)"
+                   >
+                     <span class="status-dot"></span>
+                     {{ getStatusText(order.status) }}
+                     <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                       <polyline points="6 9 12 15 18 9"/>
+                     </svg>
+                   </button>
+                   
+                   <div v-if="activeDropdown === order.id" class="dropdown-menu">
+                     <button 
+                       v-for="status in statuses" 
+                       :key="status.value"
+                       @click="updateStatus(order, status.value)"
+                       class="dropdown-item"
+                       :class="{ active: order.status === status.value }"
+                     >
+                       <span class="status-dot" :class="'dot-' + status.value"></span>
+                       {{ status.label }}
+                     </button>
+                   </div>
+                 </div>
                </td>
                <td class="text-muted">{{ formatDate(order.created_at) }}</td>
                <td class="text-right"><button @click="viewDetails(order)" class="btn-icon btn-view">Просмотр</button></td>
@@ -117,8 +139,145 @@ const updateStatus = async (order) => {
   catch (e) { toast.error('Ошибка обновления'); }
 };
 const viewDetails = (order) => { selectedOrder.value = order; showModal.value = true; };
+ const activeDropdown = ref(null);
+const statuses = [
+  { value: 'pending', label: 'Ожидает' },
+  { value: 'confirmed', label: 'Готов к выдаче' },
+  { value: 'completed', label: 'Завершен' },
+  { value: 'canceled', label: 'Отменен' }
+];
+
+const toggleDropdown = (id) => {
+  activeDropdown.value = activeDropdown.value === id ? null : id;
+};
+
+// Закрывать при клике вне
+onMounted(() => {
+  document.addEventListener('click', () => {
+    activeDropdown.value = null;
+  });
+});
 </script>
 <style scoped>
+ /* В стили AdminOrders.vue */
+
+.status-dropdown {
+  position: relative;
+}
+
+.status-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  background: transparent;
+  min-width: 100px;
+  justify-content: center;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Цвета для статусов */
+.status-btn.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+.status-btn.status-pending .status-dot {
+  background: #f59e0b;
+}
+
+.status-btn.status-confirmed {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.status-btn.status-confirmed .status-dot {
+  background: #3b82f6;
+}
+
+.status-btn.status-completed {
+  background: #d1fae5;
+  color: #065f46;
+}
+.status-btn.status-completed .status-dot {
+  background: #10b981;
+}
+
+.status-btn.status-canceled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+.status-btn.status-canceled .status-dot {
+  background: #ef4444;
+}
+
+.dropdown-arrow {
+  transition: transform 0.3s;
+}
+
+.status-btn:hover .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 160px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  overflow: hidden;
+  z-index: 100;
+  animation: dropdownSlide 0.2s ease-out;
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s;
+  color: #1f2937;
+}
+
+.dropdown-item:hover {
+  background: #f3f4f6;
+}
+.dropdown-item.active {
+  background: #f3f0f7;
+  font-weight: 600;
+}
+.dropdown-item .dot-pending { background: #f59e0b; }
+.dropdown-item .dot-confirmed { background: #3b82f6; }
+.dropdown-item .dot-completed { background: #10b981; }
+.dropdown-item .dot-canceled { background: #ef4444; }
 .form-select { padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; font-size: 0.9rem; cursor: pointer; }
 .packages-section { margin-top: 20px; }
 .package-block { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; overflow: hidden; }

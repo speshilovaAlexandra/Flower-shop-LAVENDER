@@ -229,21 +229,36 @@ const removeBouquetGroup = (bid) => {
 // ✅ ИСПРАВЛЕНО: теперь передаём price и packaging_price на бэкенд
 // CartView.vue - sendOrder()
 
-const buildPackagesPayload = () => bouquetIds.value.map(bid => {
+// CartView.vue
+
+const buildPackagesPayload = () => {
+  const packages = [];
+  
+  for (const bid of bouquetIds.value) {
     const items = cart.value.filter(i => i.bouquet_id === bid);
-    if (items.length === 0) return null;
-    return {
-        packaging: selectedPackaging.value[bid] || 'none',
-        packaging_price: getPackagingPrice(bid),
-        type: 'flower', // 🆕 Для каталога
-        // type: 'constructor', // 🆕 Для конструктора
-        items: items.map(item => ({
-            id: item.id,
-            qty: item.qty,
-            price: item.price
-        }))
-    };
-}).filter(Boolean);
+    if (items.length === 0) continue;
+    
+    // 🔥 Определяем тип: если хотя бы один товар имеет type === 'constructor'
+    const hasConstructor = items.some(item => item.type === 'constructor');
+    const packageType = hasConstructor ? 'constructor' : 'flower';
+    
+    console.log(`Сборка ${bid}: тип = ${packageType}`, items); // Отладка
+    
+    packages.push({
+      packaging: selectedPackaging.value[bid] || 'none',
+      packaging_price: getPackagingPrice(bid),
+      type: packageType, // 🆕 Отправляем тип
+      items: items.map(item => ({
+        id: item.id,
+        qty: item.qty,
+        price: item.price
+      }))
+    });
+  }
+  
+  console.log('Отправляемые packages:', packages); // Отладка
+  return packages;
+};
 
 const sendOrder = async () => {
   if (!pickupLocation.value) return error.value = 'Выберите точку самовывоза';

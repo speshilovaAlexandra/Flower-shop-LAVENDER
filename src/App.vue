@@ -68,32 +68,7 @@ php artisan storage:link -->
     <footer class="site-footer">
         <div class="container">
         <!-- Верхняя часть: Гарантии (Коммерческие факторы) -->
-        <div class="guarantees-section">
-          <!-- <div class="guarantee-item">
-            <div class="text">
-              <h4>Быстрая доставка</h4>
-              <p>Доставим в течение 2 часов</p>
-            </div>
-          </div> -->
-          <div class="guarantee-item">
-            <div class="text">
-              <h4>Только свежие цветы</h4>
-              <p>Гарантия свежести 7 дней</p>
-            </div>
-          </div>
-          <div class="guarantee-item">
-            <div class="text">
-              <h4>Безопасная оплата</h4>
-              <p>Картой или наличными</p>
-            </div>
-          </div>
-          <div class="guarantee-item">
-            <div class="text">
-              <h4>Подарок к заказу</h4>
-              <p>Открытка в каждом букете</p>
-            </div>
-          </div>
-        </div>
+      
 
         <div class="footer-divider"></div>
           <div class="footer-col">

@@ -374,7 +374,7 @@ body {
 
 /* Колонки футера */
 .footer-col {
-  flex: 1 1 300px;
+  flex: 1 1 100px;
   display: flex;
   flex-direction: column;
   align-items: center; /* 🆕 Центрируем содержимое колонок */

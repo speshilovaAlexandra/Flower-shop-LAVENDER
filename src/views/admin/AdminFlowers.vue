@@ -321,22 +321,33 @@ const handleDrop = (e) => {
 };
 // В script AdminFlowers.vue
 const downloadTemplate = () => {
-  // Создаем содержимое CSV с заголовками и примером
-  const headers = ['Название;Цена;Количество;Описание'];
-  const example = ['Роза красная;1500;50;Красные розы крупные'];
-  const content = [...headers, ...example].join('\n');
+  // Создаем содержимое CSV с заголовками и 3 примерами
+  const headers = 'Название;Цена;Количество;Описание';
+  const examples = [
+    'Орхидея;1500;50;букет орхидей',
+    'Гладиолус;1200;30;букет гладиолусов',
+    'Диантус;800;25;букет диантусов'
+  ];
   
-  // Создаем Blob с правильной кодировкой для Windows
-  const blob = new Blob(['\uFEFF' + content], { type: 'text/csv;charset=utf-8;' });
+  // Объединяем все строки
+  const content = [headers, ...examples].join('\n');
+  
+  // Создаем Blob с BOM для правильного открытия в Excel
+  const blob = new Blob(['\uFEFF' + content], { 
+    type: 'text/csv;charset=utf-8;' 
+  });
+  
+  // Создаем ссылку для скачивания
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = 'template_import.csv';
+  link.download = 'template_import_flowers.csv';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(link.href);
-};
   
+  toast.success('Шаблон скачан!');
+};
 const clearSelectedFile = () => {
   selectedCsv.value = null;
   if (csvInput.value) csvInput.value.value = '';

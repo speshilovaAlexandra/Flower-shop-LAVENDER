@@ -132,10 +132,10 @@ const getStatusText = (s) => {
 };
 
 // 🆕 Функция для иконок статусов
-const getStatusIcon = (s) => {
-  const map = { pending:'⏳', confirmed:'✅', completed:'✔️', canceled:'❌' };
-  return map[s] || '📌';
-};
+// const getStatusIcon = (s) => {
+//   const map = { pending:'⏳', confirmed:'✅', completed:'✔️', canceled:'❌' };
+//   return map[s] || '📌';
+// };
 
 onMounted(async () => {
   try { const { data } = await api.get('/admin/orders'); orders.value = data; }
@@ -182,14 +182,6 @@ const viewDetails = (order) => { selectedOrder.value = order; showModal.value = 
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.status-badge-select:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.status-badge-select:active {
-  transform: translateY(0);
-}
 
 /* Цвета для статусов */
 .status-badge-select.status-pending {

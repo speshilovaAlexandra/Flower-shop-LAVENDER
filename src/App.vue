@@ -67,10 +67,6 @@ php artisan storage:link -->
 
     <footer class="site-footer">
         <div class="container">
-        <!-- Верхняя часть: Гарантии (Коммерческие факторы) -->
-      
-
-        <div class="footer-divider"></div>
           <div class="footer-col">
             <h4>Контакты</h4>
             <ul class="contact-list">

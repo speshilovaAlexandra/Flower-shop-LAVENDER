@@ -152,7 +152,7 @@ const addToCart = (flower) => {
   if (existing) {
     existing.qty++;
   } else {
-    cart.value.push({ ...flower, qty: 1, bouquet_id: activeId });
+    cart.value.push({ ...flower, qty: 1, bouquet_id: activeId, type: 'flower' });
   }
   saveLocal();
   toast.success('Товар добавлен в корзину');

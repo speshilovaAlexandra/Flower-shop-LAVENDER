@@ -140,8 +140,14 @@ const { getCartCount, loadFromServer } = useCart();
 onMounted(async () => {
   const storedUser = localStorage.getItem('user');
   if (storedUser) user.value = JSON.parse(storedUser);
-  // ✅ Загружаем корзину при старте (с сервера если авторизован, иначе из localStorage)
-  await loadFromServer();
+  
+  try {
+    // ✅ Загружаем корзину при старте (с сервера если авторизован, иначе из localStorage)
+    await loadFromServer();
+    console.log('✅ Корзина успешно загружена');
+  } catch (error) {
+    console.error('❌ Ошибка загрузки корзины:', error);
+  }
 });
 
 const isAuthenticated = computed(() => !!localStorage.getItem('token'));
@@ -163,7 +169,6 @@ const logout = () => {
   window.location.href = '/';
 };
 </script>
-
 <style>
 /* ========================================= */
 /* 1. GLOBAL VARIABLES & RESET               */

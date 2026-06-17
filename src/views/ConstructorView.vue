@@ -210,7 +210,7 @@ const saveToCart = (items, sourceType) => {
     original_bouquet_price: item.original_price, // для информации
     qty: item.qty,
     image: item.img || item.image_url,
-    type: 'constructor',
+    type: 'constructor', // 🆕 ВАЖНО! Указываем тип - конструктор
     source: sourceType,
     bouquet_id: newId
   }));

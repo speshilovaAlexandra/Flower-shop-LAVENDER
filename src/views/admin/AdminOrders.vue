@@ -5,10 +5,10 @@
        <div class="header-title"><h1>Управление заказами</h1><p>Просмотр и обработка заказов клиентов</p></div>
        <select v-model="statusFilter" class="form-select">
          <option value="">Все статусы</option>
-         <option value="pending">⏳ Ожидает</option>
-         <option value="confirmed">✅ Готов к выдаче</option>
-         <option value="completed">✔️ Завершен</option>
-         <option value="canceled">❌ Отменен</option>
+         <option value="pending">Ожидает</option>
+         <option value="confirmed">Готов к выдаче</option>
+         <option value="completed">Завершен</option>
+         <option value="canceled">Отменен</option>
        </select>
      </header>
      <div class="card">
@@ -31,10 +31,10 @@
                      class="status-badge-select"
                      :class="'status-' + order.status"
                    >
-                     <option value="pending">⏳ Ожидает</option>
-                     <option value="confirmed">✅ Готов к выдаче</option>
-                     <option value="completed">✔️ Завершен</option>
-                     <option value="canceled">❌ Отменен</option>
+                     <option value="pending">Ожидает</option>
+                     <option value="confirmed">Готов к выдаче</option>
+                     <option value="completed">Завершен</option>
+                     <option value="canceled">Отменен</option>
                    </select>
                  </div>
                </td>
@@ -193,46 +193,38 @@ const viewDetails = (order) => { selectedOrder.value = order; showModal.value = 
 
 /* Цвета для статусов */
 .status-badge-select.status-pending {
-  background-color: #fef3c7;
   color: #92400e;
   border-left: 4px solid #f59e0b;
 }
 
 .status-badge-select.status-pending option {
-  background-color: #fef3c7;
   color: #92400e;
 }
 
 .status-badge-select.status-confirmed {
-  background-color: #dbeafe;
   color: #1e40af;
   border-left: 4px solid #3b82f6;
 }
 
 .status-badge-select.status-confirmed option {
-  background-color: #dbeafe;
   color: #1e40af;
 }
 
 .status-badge-select.status-completed {
-  background-color: #d1fae5;
   color: #065f46;
   border-left: 4px solid #10b981;
 }
 
 .status-badge-select.status-completed option {
-  background-color: #d1fae5;
   color: #065f46;
 }
 
 .status-badge-select.status-canceled {
-  background-color: #fee2e2;
   color: #991b1b;
   border-left: 4px solid #ef4444;
 }
 
 .status-badge-select.status-canceled option {
-  background-color: #fee2e2;
   color: #991b1b;
 }
 
@@ -246,22 +238,18 @@ const viewDetails = (order) => { selectedOrder.value = order; showModal.value = 
 }
 
 .status-badge-pending {
-  background: #fef3c7;
   color: #92400e;
 }
 
 .status-badge-confirmed {
-  background: #dbeafe;
   color: #1e40af;
 }
 
 .status-badge-completed {
-  background: #d1fae5;
   color: #065f46;
 }
 
 .status-badge-canceled {
-  background: #fee2e2;
   color: #991b1b;
 }
 

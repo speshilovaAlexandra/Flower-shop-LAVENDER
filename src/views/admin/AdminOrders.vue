@@ -16,7 +16,7 @@
        <div v-else-if="filteredOrders.length === 0" class="state-container empty-state"><span class="icon-empty">📦</span><h3>Заказов не найдено</h3></div>
        <div v-else class="table-responsive">
          <table class="admin-table">
-           <thead><tr><th style="width:80px">ID</th><th>Клиент</th><th>Сумма</th><th>Статус</th><th>Дата</th><th class="text-right">Действия</th></tr></thead>
+           <thead><tr><th style="width:80px">Номер заказа</th><th>Клиент</th><th>Сумма</th><th>Статус</th><th>Дата</th><th class="text-right">Действия</th></tr></thead>
            <tbody>
              <tr v-for="order in filteredOrders" :key="order.id">
                <td class="font-mono">#{{ order.id }}</td>

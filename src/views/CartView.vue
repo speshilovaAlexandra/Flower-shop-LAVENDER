@@ -12,7 +12,6 @@
 
       <div v-else class="cart-content">
         <div class="bouquets-list">
-          <!-- 🔄 Цикл по явно управляемым ID сборок -->
           <div v-for="bid in bouquetIds" :key="bid" class="bouquet-group">
             <div class="bouquet-header">
               <div class="bouquet-title">🌸 Букет №{{ bid }}</div>
@@ -32,7 +31,6 @@
                 </div>
 
                 <div class="item-controls">
-                  <!-- 🆕 Селектор перемещения между сборками -->
                   <div class="bouquet-switcher">
                     <label>Сборка:</label>
                     <select v-model="item.bouquet_id" class="form-select-small" @change="saveCart">
@@ -109,41 +107,93 @@
       </div>
     </div>
 
-    <!-- 🆕 Модальное окно замены -->
+    <!-- 🆕 КРАСИВАЯ ПЛАШКА ДЛЯ ЗАМЕНЫ ТОВАРОВ -->
     <transition name="modal-fade">
       <div v-if="showReplacementModal" class="modal-overlay" @click.self="showReplacementModal = false">
         <div class="replacement-modal">
           <div class="modal-header">
-            <h3>⚠️ Не все товары в наличии</h3>
-            <button @click="showReplacementModal = false" class="btn-close">✕</button>
+            <div class="modal-header-content">
+              <div class="modal-icon">⚠️</div>
+              <div>
+                <h3>Требуется замена товаров</h3>
+                <p class="modal-subtitle">Некоторые позиции отсутствуют в нужном количестве</p>
+              </div>
+            </div>
+            <button @click="showReplacementModal = false" class="btn-close">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
           </div>
+          
           <div class="modal-body">
             <div v-for="s in shortages" :key="s.flower_id" class="shortage-block">
               <div class="shortage-item">
-                <img :src="s.image || '/images/placeholder.jpg'" class="item-thumb" alt="">
-                <div>
-                  <h4>{{ s.name }}</h4>
-                  <p>Запрошено: {{ s.requested }} шт. | В наличии: <strong>{{ s.available }} шт.</strong></p>
+                <div class="shortage-image-wrapper">
+                  <img :src="s.image || '/images/placeholder.jpg'" class="item-thumb" alt="">
+                  <span class="stock-badge" :class="s.available === 0 ? 'out-of-stock' : 'low-stock'">
+                    {{ s.available > 0 ? 'Осталось ' + s.available + ' шт.' : 'Нет в наличии' }}
+                  </span>
+                </div>
+                <div class="shortage-info">
+                  <h4 class="shortage-name">{{ s.name }}</h4>
+                  <div class="shortage-details">
+                    <span class="detail-item requested">
+                      <span class="detail-label">Запрошено:</span>
+                      <strong>{{ s.requested }} шт.</strong>
+                    </span>
+                    <span class="detail-item available">
+                      <span class="detail-label">Доступно:</span>
+                      <strong :class="s.available < s.requested ? 'text-danger' : 'text-success'">
+                        {{ s.available }} шт.
+                      </strong>
+                    </span>
+                    <span class="detail-item missing">
+                      <span class="detail-label">Не хватает:</span>
+                      <strong class="text-danger">{{ s.missing }} шт.</strong>
+                    </span>
+                  </div>
                 </div>
               </div>
 
               <div class="replacement-options">
-                <p class="option-title">Чем заменить недостающие {{ s.missing }} шт.?</p>
+                <p class="option-title">💡 Варианты решения:</p>
                 <div class="suggestion-grid">
-                  <button v-for="opt in s.suggestions" :key="opt.id"
-                          @click="applyReplacement(s.flower_id, opt.id, 'replace')"
-                          class="btn-suggest">
-                    🔄 {{ opt.nazvanie }} ({{ opt.price }} ₽)
+                  <button 
+                    v-for="opt in s.suggestions" 
+                    :key="opt.id"
+                    @click="applyReplacement(s.flower_id, opt.id, 'replace')"
+                    class="btn-suggest"
+                  >
+                    <span class="suggest-icon">🔄</span>
+                    <span class="suggest-name">{{ opt.nazvanie }}</span>
+                    <span class="suggest-price">{{ opt.price }} ₽</span>
                   </button>
-                  <button @click="applyReplacement(s.flower_id, null, 'reduce')" class="btn-reduce">
-                    📉 Оставить только {{ s.available }} шт.
+                  <button 
+                    @click="applyReplacement(s.flower_id, null, 'reduce')" 
+                    class="btn-reduce"
+                    :disabled="s.available === 0"
+                  >
+                    <span class="suggest-icon">📉</span>
+                    <span class="suggest-name">Оставить {{ s.available }} шт.</span>
                   </button>
-                  <button @click="applyReplacement(s.flower_id, null, 'remove')" class="btn-remove-item">
-                    🗑 Убрать из заказа
+                  <button 
+                    @click="applyReplacement(s.flower_id, null, 'remove')" 
+                    class="btn-remove-item"
+                  >
+                    <span class="suggest-icon">🗑</span>
+                    <span class="suggest-name">Убрать из заказа</span>
                   </button>
                 </div>
               </div>
             </div>
+          </div>
+
+          <div class="modal-footer">
+            <button @click="showReplacementModal = false" class="btn-secondary">
+              <span>Продолжить позже</span>
+            </button>
           </div>
         </div>
       </div>
@@ -226,11 +276,6 @@ const removeBouquetGroup = (bid) => {
   }
 };
 
-// ✅ ИСПРАВЛЕНО: теперь передаём price и packaging_price на бэкенд
-// CartView.vue - sendOrder()
-
-// CartView.vue
-
 const buildPackagesPayload = () => {
   const packages = [];
   
@@ -238,16 +283,13 @@ const buildPackagesPayload = () => {
     const items = cart.value.filter(i => i.bouquet_id === bid);
     if (items.length === 0) continue;
     
-    // 🔥 Определяем тип: если хотя бы один товар имеет type === 'constructor'
     const hasConstructor = items.some(item => item.type === 'constructor');
     const packageType = hasConstructor ? 'constructor' : 'flower';
-    
-    console.log(`Сборка ${bid}: тип = ${packageType}`, items); // Отладка
     
     packages.push({
       packaging: selectedPackaging.value[bid] || 'none',
       packaging_price: getPackagingPrice(bid),
-      type: packageType, // 🆕 Отправляем тип
+      type: packageType,
       items: items.map(item => ({
         id: item.id,
         qty: item.qty,
@@ -256,7 +298,6 @@ const buildPackagesPayload = () => {
     });
   }
   
-  console.log('Отправляемые packages:', packages); // Отладка
   return packages;
 };
 
@@ -331,10 +372,10 @@ onMounted(() => {
 
 <style scoped>
 /* ========================================= */
-/* БАЗОВЫЕ ИСПРАВЛЕНИЯ (Box-sizing и переносы) */
+/* БАЗОВЫЕ СТИЛИ */
 /* ========================================= */
 .cart-page, .summary-section, .bouquet-group, .cart-item, .item-controls, .summary-row {
-  box-sizing: border-box; /* Критично: padding не будет увеличивать реальную ширину блоков */
+  box-sizing: border-box;
 }
 
 .cart-page {
@@ -343,7 +384,7 @@ onMounted(() => {
   font-family: 'Inter', sans-serif;
   max-width: 1400px;
   margin: 0 auto;
-  overflow-x: hidden; /* Убираем горизонтальный скролл, если что-то вылезло */
+  overflow-x: hidden;
 }
 
 .container { max-width: 100%; }
@@ -356,11 +397,11 @@ onMounted(() => {
   display: flex; 
   gap: 50px; 
   align-items: flex-start; 
-  flex-wrap: wrap; /* 🆕 Позволяет блокам переноситься друг под друга, если не хватает места */
+  flex-wrap: wrap;
 }
 
 .bouquets-list { 
-  flex: 1 1 600px; /* 🆕 Задаем минимальную ширину, чтобы список не сжимался и не залезал под плашку */
+  flex: 1 1 600px;
   min-width: 0; 
 }
 
@@ -372,22 +413,19 @@ onMounted(() => {
   border: 1px solid var(--border);
   position: sticky;
   top: 100px;
-  word-wrap: break-word; /* 🆕 Перенос очень длинных чисел/текста */
+  word-wrap: break-word;
   overflow-wrap: break-word;
-  max-width: 100%; /* 🆕 Гарантия, что блок не шире контейнера */
+  max-width: 100%;
 }
 
-/* ========================================= */
-/* СТРОКИ С ЦЕНАМИ (ИТОГИ) */
-/* ========================================= */
 .summary-row { 
   display: flex; 
   justify-content: space-between; 
-  align-items: center; /* 🆕 Выравнивание по центру */
+  align-items: center;
   margin-bottom: 12px; 
   color: var(--text-muted); 
-  gap: 15px; /* 🆕 Отступ между текстом и ценой */
-  flex-wrap: wrap; /* 🆕 Если цена не влезает, она перенесется на новую строку, а не вылезет за край */
+  gap: 15px;
+  flex-wrap: wrap;
 }
 
 .summary-row.total {
@@ -410,7 +448,7 @@ onMounted(() => {
   align-items: center;
   padding: 15px 0;
   border-bottom: 1px solid #eee;
-  flex-wrap: wrap; /* 🆕 Перенос элементов товара на мобильных */
+  flex-wrap: wrap;
   gap: 15px;
 }
 
@@ -435,7 +473,7 @@ onMounted(() => {
   display: flex; 
   align-items: center; 
   gap: 20px; 
-  flex-wrap: wrap; /* 🆕 Кнопки и цена не будут накладываться друг на друга */
+  flex-wrap: wrap;
 }
 
 .qty-control { display: flex; align-items: center; background: #f5f5f5; border-radius: 6px; }
@@ -473,7 +511,7 @@ onMounted(() => {
   font-size: 1.1rem; 
   min-width: 80px; 
   text-align: right; 
-  white-space: nowrap; /* 🆕 Цена товара никогда не разорвется на две строки */
+  white-space: nowrap;
 }
 
 .btn-remove { background: none; border: none; cursor: pointer; color: #ccc; font-size: 1.2rem; }
@@ -500,7 +538,7 @@ onMounted(() => {
 .bouquet-switcher label { font-size: 0.85rem; color: var(--text-muted); }
 
 /* ========================================= */
-/* ОФОРМЛЕНИЕ ЗАКАЗА (КНОПКИ И АДРЕС) */
+/* ОФОРМЛЕНИЕ ЗАКАЗА */
 /* ========================================= */
 .pickup-section { margin: 25px 0; }
 .pickup-section label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; }
@@ -533,7 +571,7 @@ onMounted(() => {
 }
 
 /* ========================================= */
-/* ПУСТОЕ СОСТОЯНИЕ И ЗАГОЛОВКИ */
+/* ПУСТОЕ СОСТОЯНИЕ */
 /* ========================================= */
 .empty-state {
   text-align: center;
@@ -573,38 +611,344 @@ onMounted(() => {
 .btn-add-bouquet:hover { border-color: var(--primary); color: var(--primary); }
 
 /* ========================================= */
-/* МОДАЛЬНОЕ ОКНО ЗАМЕН */
+/* 🆕 КРАСИВАЯ ПЛАШКА ДЛЯ ЗАМЕНЫ ТОВАРОВ */
 /* ========================================= */
+
+/* Модальное окно */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .replacement-modal {
   background: white;
-  border-radius: 16px;
+  border-radius: 20px;
   width: 100%;
-  max-width: 600px;
-  max-height: 85vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-  animation: modal-slide-up 0.3s ease-out;
+  max-width: 680px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: modalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.shortage-block { border-bottom: 1px solid #e5e7eb; padding: 16px 0; }
-.shortage-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
-.item-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; }
-.option-title { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; }
-.suggestion-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-.btn-suggest, .btn-reduce, .btn-remove-item {
-  padding: 8px 12px;
-  border-radius: 8px;
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Шапка модалки */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px 28px;
+  border-bottom: 1px solid #f3f4f6;
+  background: #fafbfc;
+  border-radius: 20px 20px 0 0;
+}
+
+.modal-header-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.modal-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.modal-header h3 {
+  margin: 0 0 4px;
+  font-size: 1.3rem;
+  color: #1f2937;
+  font-weight: 700;
+}
+
+.modal-subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.btn-close {
+  background: #f3f4f6;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  cursor: pointer;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.btn-close:hover {
+  background: #fee2e2;
+  color: #ef4444;
+  transform: rotate(90deg);
+}
+
+/* Тело модалки */
+.modal-body {
+  padding: 24px 28px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Блок с недостачей */
+.shortage-block {
+  background: #f9fafb;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
   border: 1px solid #e5e7eb;
+  transition: all 0.2s;
+}
+
+.shortage-block:last-child {
+  margin-bottom: 0;
+}
+
+.shortage-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.shortage-image-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.item-thumb {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
   background: #fff;
+}
+
+.stock-badge {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+}
+
+.stock-badge.low-stock {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #f59e0b;
+}
+
+.stock-badge.out-of-stock {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #ef4444;
+}
+
+.shortage-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.shortage-name {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.shortage-details {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  background: white;
+  padding: 2px 10px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.detail-label {
+  color: #6b7280;
+}
+
+.detail-item strong {
+  font-weight: 600;
+}
+
+.text-danger {
+  color: #dc2626;
+}
+
+.text-success {
+  color: #16a34a;
+}
+
+/* Варианты решения */
+.replacement-options {
+  margin-top: 4px;
+}
+
+.option-title {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0 0 10px;
+  font-weight: 500;
+}
+
+.suggestion-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn-suggest,
+.btn-reduce,
+.btn-remove-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: white;
   cursor: pointer;
   font-size: 0.85rem;
-  transition: 0.2s;
+  transition: all 0.2s;
+  font-family: inherit;
+  color: #1f2937;
 }
-.btn-suggest:hover { background: #f3f0f7; border-color: var(--primary); }
-.btn-reduce:hover { background: #fef3c7; border-color: #d97706; }
-.btn-remove-item:hover { background: #fee2e2; border-color: #ef4444; }
+
+.btn-suggest {
+  background: #f3f0f7;
+  border-color: #d4c4e0;
+}
+
+.btn-suggest:hover {
+  background: #e8dff0;
+  border-color: #481C69;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(72, 28, 105, 0.15);
+}
+
+.btn-suggest .suggest-price {
+  color: #481C69;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.btn-suggest .suggest-name {
+  font-weight: 500;
+}
+
+.btn-reduce {
+  background: #fef3c7;
+  border-color: #fde68a;
+}
+
+.btn-reduce:hover:not(:disabled) {
+  background: #fde68a;
+  border-color: #f59e0b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.btn-reduce:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-remove-item {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+.btn-remove-item:hover {
+  background: #fca5a5;
+  border-color: #ef4444;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.suggest-icon {
+  font-size: 1rem;
+}
+
+/* Футер модалки */
+.modal-footer {
+  padding: 16px 28px;
+  border-top: 1px solid #f3f4f6;
+  display: flex;
+  justify-content: flex-end;
+  background: #fafbfc;
+  border-radius: 0 0 20px 20px;
+}
+
+.btn-secondary {
+  background: white;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.btn-secondary:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
 
 /* ========================================= */
-/* ПЕРЕМЕННЫЕ И АДАПТИВ */
+/* ПЕРЕМЕННЫЕ */
 /* ========================================= */
 :root {
   --primary: #1a1a1a;
@@ -616,7 +960,10 @@ onMounted(() => {
   --danger: #ef4444;
 }
 
-/* 🆕 ПЛАНШЕТЫ И МОБИЛЬНЫЕ УСТРОЙСТВА */
+/* ========================================= */
+/* АДАПТИВ */
+/* ========================================= */
+
 @media (max-width: 1100px) {
   .cart-content {
     flex-direction: column;
@@ -624,7 +971,7 @@ onMounted(() => {
   .summary-section {
     width: 100%;
     flex: 1 1 auto;
-    position: static; /* Убираем "прилипание", чтобы плашка не перекрывала список товаров */
+    position: static;
   }
   .bouquets-list {
     flex: 1 1 auto;
@@ -637,6 +984,31 @@ onMounted(() => {
   .page-title { font-size: 2rem; }
   .cart-content { gap: 30px; }
   .item-controls { gap: 15px; }
+  
+  .replacement-modal {
+    max-width: 100%;
+    border-radius: 16px;
+  }
+  
+  .shortage-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .shortage-details {
+    gap: 8px;
+  }
+  
+  .suggestion-grid {
+    flex-direction: column;
+  }
+  
+  .btn-suggest,
+  .btn-reduce,
+  .btn-remove-item {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 @media (max-width: 576px) {
@@ -647,10 +1019,54 @@ onMounted(() => {
   .item-details { gap: 10px; }
   .item-image-placeholder { width: 50px; height: 50px; font-size: 1rem; }
   .item-text h4 { font-size: 1rem; }
+  
+  .modal-header {
+    padding: 18px 20px;
+  }
+  
+  .modal-header h3 {
+    font-size: 1.1rem;
+  }
+  
+  .modal-body {
+    padding: 18px 20px;
+  }
+  
+  .shortage-block {
+    padding: 16px;
+  }
+  
+  .item-thumb {
+    width: 60px;
+    height: 60px;
+  }
 }
-  @media (max-width: 368px) {
+
+@media (max-width: 480px) {
+  .modal-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .modal-icon {
+    font-size: 2rem;
+  }
+  
+  .shortage-details {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .detail-item {
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
+@media (max-width: 368px) {
   .cart-page {
-    padding: 20px 10px; /* Минимальные боковые отступы */
+    padding: 20px 10px;
   }
 
   .page-title {
@@ -662,7 +1078,6 @@ onMounted(() => {
     gap: 20px;
   }
 
-  /* 📦 ПЛАШКА ИТОГОВ */
   .summary-section {
     padding: 15px;
   }
@@ -681,7 +1096,6 @@ onMounted(() => {
     padding-top: 15px;
   }
 
-  /* 🛒 ТОВАРЫ В КОРЗИНЕ (перестраиваем в столбик) */
   .cart-item {
     flex-direction: column;
     align-items: flex-start;
@@ -710,7 +1124,6 @@ onMounted(() => {
     font-size: 0.8rem;
   }
 
-  /* 🎛 БЛОК УПРАВЛЕНИЯ (кнопки, количество, цена) */
   .item-controls {
     width: 100%;
     flex-direction: column;
@@ -757,7 +1170,6 @@ onMounted(() => {
     padding: 5px;
   }
 
-  /* 🎁 УПАКОВКА */
   .bouquet-options {
     flex-direction: column;
     align-items: flex-start;
@@ -777,7 +1189,6 @@ onMounted(() => {
     font-size: 0.85rem;
   }
 
-  /* 🔘 КНОПКИ И ЗАГОЛОВКИ */
   .bouquet-title {
     font-size: 1.1rem;
   }
@@ -801,27 +1212,44 @@ onMounted(() => {
     font-size: 1rem;
   }
 
-  /* ⚠️ МОДАЛКА ЗАМЕН */
+  /* Модалка на очень маленьких экранах */
   .replacement-modal {
-    max-height: 90vh;
-    border-radius: 12px;
+    max-height: 95vh;
+    border-radius: 16px;
   }
   .modal-header {
-    padding: 15px;
+    padding: 14px 16px;
   }
   .modal-header h3 {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
   .modal-body {
-    padding: 15px;
+    padding: 14px 16px;
+  }
+  .shortage-block {
+    padding: 12px;
+    border-radius: 12px;
+  }
+  .item-thumb {
+    width: 50px;
+    height: 50px;
+  }
+  .shortage-name {
+    font-size: 0.95rem;
   }
   .suggestion-grid {
     flex-direction: column;
+    gap: 6px;
   }
   .btn-suggest, .btn-reduce, .btn-remove-item {
     width: 100%;
     text-align: center;
-    padding: 10px;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    justify-content: center;
+  }
+  .modal-footer {
+    padding: 12px 16px;
   }
 }
 </style>

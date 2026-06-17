@@ -132,10 +132,10 @@ const getStatusText = (s) => {
 };
 
 // 🆕 Функция для иконок статусов
-// const getStatusIcon = (s) => {
-//   const map = { pending:'⏳', confirmed:'✅', completed:'✔️', canceled:'❌' };
-//   return map[s] || '📌';
-// };
+const getStatusIcon = (s) => {
+  const map = { pending:'Ожидает', confirmed:'Готов к выдаче', completed:'Завершен', canceled:'Отменен' };
+  return map[s] || '📌';
+};
 
 onMounted(async () => {
   try { const { data } = await api.get('/admin/orders'); orders.value = data; }

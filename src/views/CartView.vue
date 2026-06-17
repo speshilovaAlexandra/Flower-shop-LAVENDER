@@ -141,17 +141,17 @@
                   <div class="shortage-details">
                     <span class="detail-item requested">
                       <span class="detail-label">Запрошено:</span>
-                      <strong>{{ s.requested }} шт.</strong>
+                      <strong>{{ s.requested }}</strong>
                     </span>
                     <span class="detail-item available">
                       <span class="detail-label">Доступно:</span>
                       <strong :class="s.available < s.requested ? 'text-danger' : 'text-success'">
-                        {{ s.available }} шт.
+                        {{ s.available }}
                       </strong>
                     </span>
                     <span class="detail-item missing">
                       <span class="detail-label">Не хватает:</span>
-                      <strong class="text-danger">{{ s.missing }} шт.</strong>
+                      <strong class="text-danger">{{ s.missing }}</strong>
                     </span>
                   </div>
                 </div>

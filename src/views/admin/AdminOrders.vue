@@ -5,10 +5,10 @@
        <div class="header-title"><h1>Управление заказами</h1><p>Просмотр и обработка заказов клиентов</p></div>
        <select v-model="statusFilter" class="form-select">
          <option value="">Все статусы</option>
-         <option value="pending">Ожидает</option>
-         <option value="confirmed">Готов к выдаче</option>
-         <option value="completed">Завершен</option>
-         <option value="canceled">Отменен</option>
+         <option value="pending">⏳ Ожидает</option>
+         <option value="confirmed">✅ Готов к выдаче</option>
+         <option value="completed">✔️ Завершен</option>
+         <option value="canceled">❌ Отменен</option>
        </select>
      </header>
      <div class="card">
@@ -23,13 +23,23 @@
                <td><div class="cell-main">{{ order.user?.name || 'Неизвестно' }}</div></td>
                <td><span class="price-tag">{{ formatPrice(order.total_price) }}</span></td>
                <td>
-                 <select v-model="order.status" @change="updateStatus(order)" :class="'status-select status-' + order.status">
-                   <option value="pending">Ожидает</option><option value="confirmed">Готов к выдаче</option>
-                   <option value="completed">Завершен</option><option value="canceled">Отменен</option>
-                 </select>
+                 <!-- 🆕 КРАСИВАЯ ПЛАШКА СТАТУСА -->
+                 <div class="status-wrapper">
+                   <select 
+                     v-model="order.status" 
+                     @change="updateStatus(order)" 
+                     class="status-badge-select"
+                     :class="'status-' + order.status"
+                   >
+                     <option value="pending">⏳ Ожидает</option>
+                     <option value="confirmed">✅ Готов к выдаче</option>
+                     <option value="completed">✔️ Завершен</option>
+                     <option value="canceled">❌ Отменен</option>
+                   </select>
+                 </div>
                </td>
                <td class="text-muted">{{ formatDate(order.created_at) }}</td>
-               <td class="text-right"><button @click="viewDetails(order)" class="btn-icon btn-view">Просмотр</button></td>
+               <td class="text-right"><button @click="viewDetails(order)" class="btn-icon btn-view">👁 Просмотр</button></td>
              </tr>
            </tbody>
          </table>
@@ -47,14 +57,23 @@
            <div class="info-grid">
              <div class="info-block"><label>Клиент</label><div class="info-value">{{ selectedOrder?.user?.name }}</div></div>
              <div class="info-block"><label>Email</label><div class="info-value">{{ selectedOrder?.user?.email }}</div></div>
-             <div class="info-block"><label>Статус</label><div class="info-value"><span :class="'badge status-' + selectedOrder?.status">{{ getStatusText(selectedOrder?.status) }}</span></div></div>
+             <div class="info-block"><label>Статус</label>
+               <div class="info-value">
+                 <span :class="'badge status-badge-' + selectedOrder?.status">
+                   {{ getStatusIcon(selectedOrder?.status) }} {{ getStatusText(selectedOrder?.status) }}
+                 </span>
+               </div>
+             </div>
              <div class="info-block"><label>Точка выдачи</label><div class="info-value">{{ selectedOrder?.pickup_location || 'Не указана' }}</div></div>
              <div class="info-block full-width"><label>Итого</label><div class="info-value price-large">{{ formatPrice(selectedOrder?.total_price) }}</div></div>
            </div>
            <div class="packages-section">
              <h4>Состав заказа</h4>
              <div v-for="(pkg, idx) in orderPackages" :key="idx" class="package-block">
-               <div class="package-header">Сборка {{ idx + 1 }} <span class="badge-packaging">{{ getPackagingLabel(pkg.packaging) }}</span></div>
+               <div class="package-header">
+                 <span>Сборка {{ idx + 1 }}</span>
+                 <span class="badge-packaging">{{ getPackagingLabel(pkg.packaging) }}</span>
+               </div>
                <div class="items-list">
                  <div v-for="item in pkg.items" :key="item.id" class="item-row">
                    <div class="item-img"><img :src="getImageUrl(getFlowerImg(item.id))" alt="" @error="handleImageError"></div>
@@ -74,6 +93,7 @@
    </transition>
  </div>
 </template>
+
 <script setup>
 import { onMounted, ref, computed } from 'vue';
 import api from '@/api';
@@ -102,9 +122,20 @@ const getFlowerDetails = (id) => selectedOrder.value?.flowers?.find(f => f.id ==
 const getFlowerName = (id) => getFlowerDetails(id)?.nazvanie || 'Товар удален';
 const getFlowerPrice = (id) => getFlowerDetails(id)?.pivot?.price_at_purchase || 0;
 const getFlowerImg = (id) => getFlowerDetails(id)?.flower_image_url || getFlowerDetails(id)?.image_url;
+
 const formatPrice = (p) => p ? new Intl.NumberFormat('ru-RU').format(p) + ' ₽' : '0 ₽';
 const formatDate = (d) => d ? new Date(d).toLocaleString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '-';
-const getStatusText = (s) => ({ pending:'Ожидает', confirmed:'Готов к выдаче', completed:'Завершен', canceled:'Отменен' }[s] || s);
+
+const getStatusText = (s) => {
+  const map = { pending:'Ожидает', confirmed:'Готов к выдаче', completed:'Завершен', canceled:'Отменен' };
+  return map[s] || s;
+};
+
+// 🆕 Функция для иконок статусов
+const getStatusIcon = (s) => {
+  const map = { pending:'⏳', confirmed:'✅', completed:'✔️', canceled:'❌' };
+  return map[s] || '📌';
+};
 
 onMounted(async () => {
   try { const { data } = await api.get('/admin/orders'); orders.value = data; }
@@ -113,13 +144,138 @@ onMounted(async () => {
 });
 
 const updateStatus = async (order) => {
-  try { await api.patch(`/admin/orders/${order.id}/status`, { status: order.status }); toast.success('Статус обновлён'); }
-  catch (e) { toast.error('Ошибка обновления'); }
+  try { 
+    await api.patch(`/admin/orders/${order.id}/status`, { status: order.status }); 
+    toast.success('Статус обновлён'); 
+  }
+  catch (e) { 
+    toast.error('Ошибка обновления'); 
+  }
 };
+
 const viewDetails = (order) => { selectedOrder.value = order; showModal.value = true; };
 </script>
+
 <style scoped>
-.form-select { padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; font-size: 0.9rem; cursor: pointer; }
+/* ===== КРАСИВЫЕ ПЛАШКИ СТАТУСОВ ===== */
+.status-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.status-badge-select {
+  padding: 6px 16px 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='rgba(0,0,0,0.3)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 28px;
+  transition: all 0.3s ease;
+  min-width: 130px;
+  text-align: left;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.status-badge-select:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.status-badge-select:active {
+  transform: translateY(0);
+}
+
+/* Цвета для статусов */
+.status-badge-select.status-pending {
+  background-color: #fef3c7;
+  color: #92400e;
+  border-left: 4px solid #f59e0b;
+}
+
+.status-badge-select.status-pending option {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge-select.status-confirmed {
+  background-color: #dbeafe;
+  color: #1e40af;
+  border-left: 4px solid #3b82f6;
+}
+
+.status-badge-select.status-confirmed option {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.status-badge-select.status-completed {
+  background-color: #d1fae5;
+  color: #065f46;
+  border-left: 4px solid #10b981;
+}
+
+.status-badge-select.status-completed option {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge-select.status-canceled {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border-left: 4px solid #ef4444;
+}
+
+.status-badge-select.status-canceled option {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* ===== БЕЙДЖИ В МОДАЛКЕ ===== */
+.badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.status-badge-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge-confirmed {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-badge-completed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge-canceled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* ===== ОСТАЛЬНЫЕ СТИЛИ ===== */
+.form-select { 
+  padding: 8px 12px; 
+  border: 1px solid #e5e7eb; 
+  border-radius: 8px; 
+  background: #fff; 
+  font-size: 0.9rem; 
+  cursor: pointer; 
+  min-width: 160px;
+}
+
 .packages-section { margin-top: 20px; }
 .package-block { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
 .package-header { background: #f3f4f6; padding: 10px 15px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
@@ -127,10 +283,41 @@ const viewDetails = (order) => { selectedOrder.value = order; showModal.value = 
 .item-row { display: flex; align-items: center; gap: 12px; padding: 10px 15px; border-bottom: 1px solid #e5e7eb; }
 .item-row:last-child { border-bottom: none; }
 .full-width { grid-column: 1 / -1; }
-:root { --primary: #481C69; --primary-light: #f3f0f7; --text-main: #1f2937; --text-muted: #6b7280; --bg-page: #f3f4f6; --bg-card: #ffffff; --border: #e5e7eb; --status-pending-bg: #fef3c7; --status-pending-text: #92400e; --status-confirmed-bg: #dbeafe; --status-confirmed-text: #1e40af; --status-completed-bg: #d1fae5; --status-completed-text: #065f46; --status-canceled-bg: #fee2e2; --status-canceled-text: #b91c1c; }
-.admin-page { background-color: var(--bg-page); min-height: 100vh; padding: 30px 20px; font-family: 'Inter', system-ui, sans-serif; color: var(--text-main); }
+
+:root { 
+  --primary: #481C69; 
+  --primary-light: #f3f0f7; 
+  --text-main: #1f2937; 
+  --text-muted: #6b7280; 
+  --bg-page: #f3f4f6; 
+  --bg-card: #ffffff; 
+  --border: #e5e7eb; 
+  --status-pending-bg: #fef3c7; 
+  --status-pending-text: #92400e; 
+  --status-confirmed-bg: #dbeafe; 
+  --status-confirmed-text: #1e40af; 
+  --status-completed-bg: #d1fae5; 
+  --status-completed-text: #065f46; 
+  --status-canceled-bg: #fee2e2; 
+  --status-canceled-text: #b91c1c; 
+}
+
+.admin-page { 
+  background-color: var(--bg-page); 
+  min-height: 100vh; 
+  padding: 30px 20px; 
+  font-family: 'Inter', system-ui, sans-serif; 
+  color: var(--text-main); 
+}
 .container { max-width: 1200px; margin: 0 auto; }
-.admin-header { margin-bottom: 30px; }
+.admin-header { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 30px; 
+  flex-wrap: wrap;
+  gap: 15px;
+}
 .header-title h1 { font-size: 1.8rem; font-weight: 800; margin: 0 0 5px; color: var(--text-main); }
 .header-title p { margin: 0; color: var(--text-muted); font-size: 0.95rem; }
 .card { background: var(--bg-card); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); overflow: hidden; border: 1px solid var(--border); }
@@ -148,13 +335,25 @@ const viewDetails = (order) => { selectedOrder.value = order; showModal.value = 
 .text-muted { color: var(--text-muted); font-size: 0.9rem; }
 .text-right { text-align: right; }
 .price-tag { font-weight: 700; color: var(--primary); }
-.status-select { padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid transparent; cursor: pointer; outline: none; appearance: none; background-repeat: no-repeat; background-position: right 8px center; padding-right: 24px; transition: all 0.2s; }
-.status-pending { background-color: var(--status-pending-bg); color: var(--status-pending-text); }
-.status-confirmed { background-color: var(--status-confirmed-bg); color: var(--status-confirmed-text); }
-.status-completed { background-color: var(--status-completed-bg); color: var(--status-completed-text); }
-.status-canceled { background-color: var(--status-canceled-bg); color: var(--status-canceled-text); }
-.btn-icon { display: inline-flex; align-items: center; gap: 6px; background: white; border: 1px solid var(--border); color: var(--text-main); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+.cell-main { font-weight: 500; }
+
+.btn-icon { 
+  display: inline-flex; 
+  align-items: center; 
+  gap: 6px; 
+  background: white; 
+  border: 1px solid var(--border); 
+  color: var(--text-main); 
+  padding: 6px 12px; 
+  border-radius: 6px; 
+  font-size: 0.85rem; 
+  font-weight: 500; 
+  cursor: pointer; 
+  transition: all 0.2s; 
+}
 .btn-icon:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+/* Модальное окно */
 .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
 .modal-container { background: white; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); animation: modal-slide-up 0.3s ease-out; }
 @keyframes modal-slide-up { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -168,11 +367,6 @@ const viewDetails = (order) => { selectedOrder.value = order; showModal.value = 
 .info-block label { display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
 .info-value { font-size: 1rem; color: var(--text-main); font-weight: 500; }
 .price-large { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
-.badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; }
-.badge.status-pending { background: var(--status-pending-bg); color: var(--status-pending-text); }
-.badge.status-confirmed { background: var(--status-confirmed-bg); color: var(--status-confirmed-text); }
-.badge.status-completed { background: var(--status-completed-bg); color: var(--status-completed-text); }
-.badge.status-canceled { background: var(--status-canceled-bg); color: var(--status-canceled-text); }
 .items-list { display: flex; flex-direction: column; gap: 12px; }
 .item-img { width: 50px; height: 50px; border-radius: 6px; overflow: hidden; background: #f3f4f6; flex-shrink: 0; }
 .item-img img { width: 100%; height: 100%; object-fit: cover; }
@@ -185,5 +379,21 @@ const viewDetails = (order) => { selectedOrder.value = order; showModal.value = 
 .btn-secondary:hover { background: #f3f4f6; border-color: #d1d5db; }
 .modal-fade-enter-active, .modal-fade-leave-active { transition: opacity 0.3s ease; }
 .modal-fade-enter-from, .modal-fade-leave-to { opacity: 0; }
-@media (max-width: 768px) { .info-grid { grid-template-columns: 1fr; gap: 15px; } .admin-table th, .admin-table td { padding: 12px 8px; font-size: 0.9rem; } .btn-icon span { display: none; } .btn-icon { padding: 8px; } }
+
+/* Адаптив */
+@media (max-width: 768px) { 
+  .info-grid { grid-template-columns: 1fr; gap: 15px; } 
+  .admin-table th, .admin-table td { padding: 12px 8px; font-size: 0.9rem; } 
+  .btn-icon span { display: none; } 
+  .btn-icon { padding: 8px; }
+  .admin-header { flex-direction: column; align-items: flex-start; }
+  .status-badge-select { min-width: 100px; font-size: 0.75rem; padding: 4px 24px 4px 10px; }
+}
+
+@media (max-width: 480px) {
+  .admin-page { padding: 15px 10px; }
+  .admin-table th, .admin-table td { padding: 8px 4px; font-size: 0.75rem; }
+  .status-badge-select { min-width: 80px; font-size: 0.7rem; padding: 3px 20px 3px 8px; }
+  .price-tag { font-size: 0.85rem; }
+}
 </style>

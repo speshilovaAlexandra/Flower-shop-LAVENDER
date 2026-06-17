@@ -76,6 +76,15 @@
             </svg>
             <div v-else class="upload-spinner"></div>
             <span>{{ uploading ? 'Загрузка...' : 'Загрузить файл' }}</span>
+            <!-- В csv-actions добавить -->
+            <button @click="downloadTemplate" class="btn-sample">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Скачать шаблон
+            </button>
           </button>
           
 
@@ -311,7 +320,24 @@ const handleDrop = (e) => {
     toast.error('Пожалуйста, загрузите файл в формате CSV');
   }
 };
-
+// В script AdminFlowers.vue
+const downloadTemplate = () => {
+  // Создаем содержимое CSV с заголовками и примером
+  const headers = ['Название;Цена;Количество;Описание'];
+  const example = ['Роза красная;1500;50;Красные розы крупные'];
+  const content = [...headers, ...example].join('\n');
+  
+  // Создаем Blob с правильной кодировкой для Windows
+  const blob = new Blob(['\uFEFF' + content], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'template_import.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+};
+  
 const clearSelectedFile = () => {
   selectedCsv.value = null;
   if (csvInput.value) csvInput.value.value = '';

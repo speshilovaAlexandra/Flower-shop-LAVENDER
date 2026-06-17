@@ -148,13 +148,13 @@
                 </td>
                 <td>
                   <div class="cell-main">{{ flower.nazvanie }}</div>
-                  <div class="cell-sub">ID: {{ flower.id }}</div>
+                  
                 </td>
                 <td>
                   <span class="text-truncate" :title="flower.opisanie">{{ flower.opisanie || '—' }}</span>
                 </td>
                 <td>
-                  <span class="price-tag">{{ flower.price }} ₽</span>
+                  <span class="price-tag">{{ flower.price }} </span>
                 </td>
                 <td>
                   <span :class="['stock-badge', flower.quantity < 5 ? 'low' : 'ok']">

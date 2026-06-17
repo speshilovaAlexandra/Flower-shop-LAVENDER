@@ -60,7 +60,8 @@
              <div class="info-block"><label>Статус</label>
                <div class="info-value">
                  <span :class="'badge status-badge-' + selectedOrder?.status">
-                   {{ getStatusIcon(selectedOrder?.status) }} {{ getStatusText(selectedOrder?.status) }}
+                    
+                  {{ getStatusText(selectedOrder?.status) }}
                  </span>
                </div>
              </div>
@@ -131,11 +132,11 @@ const getStatusText = (s) => {
   return map[s] || s;
 };
 
-// 🆕 Функция для иконок статусов
-const getStatusIcon = (s) => {
-  const map = { pending:'Ожидает', confirmed:'Готов к выдаче', completed:'Завершен', canceled:'Отменен' };
-  return map[s] || '📌';
-};
+// // 🆕 Функция для иконок статусов
+// const getStatusIcon = (s) => {
+//   const map = { pending:'Ожидает', confirmed:'Готов к выдаче', completed:'Завершен', canceled:'Отменен' };
+//   return map[s] || '📌';
+// };
 
 onMounted(async () => {
   try { const { data } = await api.get('/admin/orders'); orders.value = data; }

@@ -367,7 +367,7 @@ body {
 .footer-col {
   flex: 1 1 300px; /* Базовая ширина 300px, могут сжиматься */
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
 }
 
 /* Первая колонка чуть шире на десктопе */
@@ -427,7 +427,7 @@ h4 {
   padding: 0;
   margin: 0;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 12px;
 }
 

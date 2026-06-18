@@ -93,8 +93,8 @@ const error = ref(null)
 const imageLoaded = ref(false)
 
 const seo = {
-  title: 'Купить букет с доставкой | LAVENDER',
-  description: 'Закажите прекрасный букет с быстрой доставкой по Перми. Свежие цветы, доступные цены.'
+  title: 'Купить букет  | LAVENDER',
+  description: 'Закажите прекрасный букет. Свежие цветы, доступные цены.'
 }
 
 const isAuthenticated = () => !!localStorage.getItem('token')

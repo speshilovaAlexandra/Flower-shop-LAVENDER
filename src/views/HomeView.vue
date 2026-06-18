@@ -52,7 +52,7 @@ onMounted(async () => {
   const seo = {
   title: 'Магазин цветов | LAVENDER',
   description: 'Свежие цветы, доступные цены.'
-}
+};
    document.title = seo.title
   let metaDescription = document.querySelector('meta[name="description"]')
   if (!metaDescription) {
@@ -61,7 +61,7 @@ onMounted(async () => {
     document.head.appendChild(metaDescription)
   }
   metaDescription.content = seo.description
-})
+});
 </script>
 
 <style scoped>

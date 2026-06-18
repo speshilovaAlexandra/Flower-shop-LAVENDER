@@ -163,7 +163,7 @@ onMounted(fetchFlowers);
 const seo = {
   title: 'Каталог цветов — купить букеты недорого в Перми | LAVENDER',
   description: 'Большой выбор свежих цветов и букетов в Перми. Розы, тюльпаны, хризантемы и другие цветы. Низкие цены, акции и скидки!'
-};
+}
  document.title = seo.title
   let metaDescription = document.querySelector('meta[name="description"]')
   if (!metaDescription) {
@@ -172,7 +172,7 @@ const seo = {
     document.head.appendChild(metaDescription)
   }
   metaDescription.content = seo.description
-});
+})
 </script>
 <style scoped>
 :root {

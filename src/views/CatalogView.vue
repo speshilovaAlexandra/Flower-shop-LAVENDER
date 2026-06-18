@@ -172,7 +172,7 @@ const seo = {
     document.head.appendChild(metaDescription)
   }
   metaDescription.content = seo.description
-})
+});
 </script>
 <style scoped>
 :root {

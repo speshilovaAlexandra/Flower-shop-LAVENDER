@@ -160,11 +160,6 @@ const addToCart = (flower) => {
 
 onMounted(fetchFlowers);
 
-const seo = {
-  title: 'Каталог цветов — купить букеты недорого в Перми | LAVENDER',
-  description: 'Большой выбор свежих цветов и букетов в Перми. Розы, тюльпаны, хризантемы и другие цветы. Низкие цены, акции и скидки!'
-}
-
 </script>
 <style scoped>
 :root {
